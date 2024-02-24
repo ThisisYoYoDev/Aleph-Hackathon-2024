@@ -18,7 +18,7 @@ async def upload_store(file: UploadFile = File(...)):
     account = get_fallback_account()
     async with AuthenticatedAlephHttpClient(account) as client:
         message, status = await client.create_store(
-            file_content=file.file.read(),
+            file_content=contents,
             channel=CHANNEL,
             storage_engine=storage_engine,
         )
