@@ -4,9 +4,12 @@ from fastapi.responses import StreamingResponse
 from aleph.sdk.chains.ethereum import get_fallback_account
 from aleph.sdk.client import AuthenticatedAlephHttpClient
 from aleph_message.models import StoreMessage, ItemType
+from typing import Optional
 import io
 
 CHANNEL = "TEAM-7"
+AGGREGATE_KEY = "VibeDefy"
+
 app = FastAPI()
 origins = ["*"]
 
@@ -33,6 +36,12 @@ async def upload_store(file: UploadFile = File(...)):
             channel=CHANNEL,
             storage_engine=storage_engine,
         )
+        await upload_aggregate({
+            file.filename: {
+                'cid': message.content.item_hash,
+                'item_hash': message.item_hash
+            }
+        })
     return message, status
 
 
@@ -54,26 +63,46 @@ async def get_store(item_hash: str):
             return HTTPException(status_code=404, detail="Item not found")
 
 
-# async def upload_aggregate(key, content):
-#     account = get_fallback_account()
-#     async with AuthenticatedAlephHttpClient(account) as client:
-#         message, status = await client.create_aggregate(
-#             key=key,
-#             content=content,
-#             channel=CHANNEL,
-#         )
-#     return message, status
+@app.get("/song_list")
+async def get_song_list(song_name: Optional[str] = None, start: Optional[int] = 0, limit: Optional[int] = 32):
+    account = get_fallback_account()
+    async with AuthenticatedAlephHttpClient(account) as client:
+        message = await client.fetch_aggregate(account.get_address(), AGGREGATE_KEY)
+        if song_name:
+            filtered_songs = {key: value for key, value in message.items() if song_name.lower() in key.lower()}
+            if not filtered_songs:
+                raise HTTPException(status_code=404, detail="Song not found")
+            paginated_songs = dict(list(filtered_songs.items())[start: start + limit])
+            next_token = start + limit if start + limit < len(filtered_songs) else None
+        else:
+            paginated_songs = dict(list(message.items())[start: start + limit])
+            next_token = start + limit if start + limit < len(message) else None
+        return {"songs": paginated_songs, "next_token": next_token}
+
+
+async def upload_aggregate(content: dict):
+    account = get_fallback_account()
+    async with AuthenticatedAlephHttpClient(account) as client:
+        message, status = await client.create_aggregate(
+            key=AGGREGATE_KEY,
+            content=content,
+            channel=CHANNEL,
+        )
+    return message, status
+
+
+
 
 # def read_file_bytes(file_path: str) -> bytes:
 #     with open(file_path, "rb") as file:
 #         return file.read()
-
-
 # async def main():
-    # message, status = await upload_aggregate("test", "test")
-    # print(message, status)
-    # message, status = await upload_store(read_file_bytes("Katy Perry - I Kissed A Girl.mp3"))
-    # print(message.item_hash)
+#     message, status = await upload_aggregate({'age': None})
+#     print(message, status)
+#     message = await download_aggregate(AGGREGATE_KEY)
+#     print(message)
+#     message, status = await upload_store(read_file_bytes("Katy Perry - I Kissed A Girl.mp3"))
+#     print(message.item_hash)
 
 
 # import asyncio
