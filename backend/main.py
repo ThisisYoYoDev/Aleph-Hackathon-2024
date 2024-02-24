@@ -8,6 +8,8 @@ from typing import Optional
 import io
 import pathlib
 import requests
+import random
+
 
 CHANNEL = "TEAM-7"
 AGGREGATE_KEY = "VibeDefy"
@@ -109,6 +111,9 @@ async def get_next_music(last_song: str = None):
         music_from.remove(last_song)
     except:
         print('Ok')
+
+    # Help the ai to select a better song
+    random.shuffle(music_from)
     params = {
         "prompt": promtPre + "'" + last_song + "'" + promtMid + str(music_from) + promtPost,
         "temperature": 0.1,
