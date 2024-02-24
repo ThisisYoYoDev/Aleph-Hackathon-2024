@@ -123,7 +123,7 @@ async def get_next_music(last_song: str = None):
 
     print(response.json())
     if response.status_code == 200:
-        music_name = response.json()['content'].split('|name=')[1].split('|')[0]
+        music_name = response.json()['content'].split('|name=')[1].split("'|")[0]
         for music in music_from:
             if music.startswith(music_name):
                 music_name = music
