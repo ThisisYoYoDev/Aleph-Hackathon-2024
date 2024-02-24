@@ -3,5 +3,3 @@ declare global {
     ethereum: any;
   }
 }
-
-declare module "react-ipfs-uploader";

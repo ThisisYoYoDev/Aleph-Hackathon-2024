@@ -5,7 +5,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Register } from "./pages/register";
 import { Login } from "./pages/login";
 import { Dashboard } from "./pages/dashboard";
-import PlaylistManager from "./pages/test";
+import { Song } from "./pages/song";
 
 const router = createBrowserRouter([
   {
@@ -21,8 +21,8 @@ const router = createBrowserRouter([
     element: <Dashboard />,
   },
   {
-    path: "/test",
-    element: <PlaylistManager />,
+    path: "/song",
+    element: <Song />,
   },
 ]);
 
