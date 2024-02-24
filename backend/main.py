@@ -7,6 +7,7 @@ from aleph_message.models import StoreMessage, ItemType
 from typing import Optional
 import io
 import pathlib
+import requests
 
 CHANNEL = "TEAM-7"
 AGGREGATE_KEY = "VibeDefy"
@@ -86,6 +87,48 @@ async def get_song_list(song_name: Optional[str] = None, start: Optional[int] = 
             next_token = start + limit if start + limit < len(message) else None
         return {"songs": paginated_songs, "next_token": next_token}
 
+API_URL = "https://curated.aleph.cloud/vm/cb6a4ae6bf93599b646aa54d4639152d6ea73eedc709ca547697c56608101fc7/completion"
+
+promtPre = "<|im_start|>system\n\
+I'm a user and i liste to some musique on a streaming platform\n\
+<|im_end|>\n\
+<|im_start|>user\nI just listen to the following musique"
+promtMid = "Give me the next one i should then listen in the format |name='musique_name'| you can only select from following musiques: "
+promtPost = "\n<|im_end|>\n<|im_start|>assistant\n"
+
+@app.get("/next_music")
+async def get_next_music(last_song: str = None):
+    if last_song == None:
+        raise ValueError("last_song name is required")
+    musicss = await get_song_list()
+    music_from = []
+    for tmp in list(musicss["songs"].keys()):
+        if tmp.endswith('.mp3'):
+            music_from.append(tmp)
+    try:
+        music_from.remove(last_song)
+    except:
+        print('Ok')
+    params = {
+        "prompt": promtPre + "'" + last_song + "'" + promtMid + str(music_from) + promtPost,
+        "temperature": 0.1,
+        "top_p": 1,
+        "top_k": 40,
+        "n_predict": 20,
+    }
+    response = requests.post(API_URL, json=params)
+
+    if response.status_code == 200:
+        music_name = response.json()['content'].split("'")[1]
+        for music in music_from:
+            if music.startswith(music_name):
+                music_name = music
+                break
+        if music_name not in music_from:
+            music_name = music_from[0]
+        return {'next_musique': music_name}
+    else:
+        return None
 
 async def upload_aggregate(content: dict):
     account = get_fallback_account(path=KEY_PATH)
