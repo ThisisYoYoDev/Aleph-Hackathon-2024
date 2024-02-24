@@ -28,7 +28,7 @@ app.add_middleware(
 
 
 @app.post("/upload")
-async def upload_store(cid: str, filename: str, cid_image: str | None = None):
+async def upload_store(cid: str, filename: str, cid_image: str = None):
     account = get_fallback_account(path=KEY_PATH)
     async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_store(
