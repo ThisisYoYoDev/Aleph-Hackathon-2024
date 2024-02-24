@@ -54,6 +54,47 @@ async def get_store(item_hash: str):
             return HTTPException(status_code=404, detail="Item not found")
 
 
+async def create_post(post_content: dict):
+    if not post_content:
+        raise ValueError("post_content is required")
+
+    storage_engine = "storage"
+
+    account = get_fallback_account()
+    async with AuthenticatedAlephHttpClient(account) as client:
+        message, status = await client.create_post(
+            post_type='test',
+            post_content=post_content,
+            channel=CHANNEL,
+            storage_engine=storage_engine,
+        )
+    return message, status
+
+async def get_store(hash: str):
+    account = get_fallback_account()
+    async with AuthenticatedAlephHttpClient(account) as client:
+        message = await client.get_message(hash)
+    return message.json()
+
+async def update_store(post_content: str, hash_content: str):
+    if not post_content:
+        raise ValueError("post_content is required to update")
+
+    if not hash:
+        raise ValueError("hash is required to update a post")
+
+    storage_engine = "storage"
+    account = get_fallback_account()
+    async with AuthenticatedAlephHttpClient(account) as client:
+        message, status = await client.create_post(
+            post_type='test',
+            post_content=post_content,
+            ref=hash_content,
+            channel=CHANNEL,
+            storage_engine=storage_engine,
+        )
+    return message, status
+
 # async def upload_aggregate(key, content):
 #     account = get_fallback_account()
 #     async with AuthenticatedAlephHttpClient(account) as client:
