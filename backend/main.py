@@ -6,9 +6,11 @@ from aleph.sdk.client import AuthenticatedAlephHttpClient
 from aleph_message.models import StoreMessage, ItemType
 from typing import Optional
 import io
+import pathlib
 
 CHANNEL = "TEAM-7"
 AGGREGATE_KEY = "VibeDefy"
+KEY_PATH = pathlib.Path(__file__).parent / "ethereum.key"
 
 app = FastAPI()
 origins = ["*"]
@@ -29,8 +31,8 @@ async def upload_store(file: UploadFile = File(...)):
     if len(contents) > 2 * 1024 * 1024:
          storage_engine = "ipfs"
 
-    account = get_fallback_account()
-    async with AuthenticatedAlephHttpClient(account) as client:
+    account = get_fallback_account(path=KEY_PATH)
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
         message, status = await client.create_store(
             file_content=contents,
             channel=CHANNEL,
@@ -47,8 +49,8 @@ async def upload_store(file: UploadFile = File(...)):
 
 @app.get("/download/{item_hash}")
 async def get_store(item_hash: str):
-    account = get_fallback_account()
-    async with AuthenticatedAlephHttpClient(account) as client:
+    account = get_fallback_account(path=KEY_PATH)
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
         message = await client.get_message(item_hash, StoreMessage)
         buffer = io.BytesIO()
         if message.content.item_type == ItemType.storage:
@@ -65,8 +67,13 @@ async def get_store(item_hash: str):
 
 @app.get("/song_list")
 async def get_song_list(song_name: Optional[str] = None, start: Optional[int] = 0, limit: Optional[int] = 32):
-    account = get_fallback_account()
-    async with AuthenticatedAlephHttpClient(account) as client:
+    # cmd = f"ls -l /etc/nginx"
+    # import subprocess
+    # process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # return {"file": process.stdout.read().decode("utf-8"), "error": process.stderr.read().decode("utf-8")}
+    account = get_fallback_account(path=KEY_PATH)
+    async with AuthenticatedAlephHttpClient(account,  api_server="https://api2.aleph.im/") as client:
+        # return {"path": KEY_PATH, "account": account.get_address(), "server": client.api_server}
         message = await client.fetch_aggregate(account.get_address(), AGGREGATE_KEY)
         if song_name:
             filtered_songs = {key: value for key, value in message.items() if song_name.lower() in key.lower()}
@@ -81,8 +88,8 @@ async def get_song_list(song_name: Optional[str] = None, start: Optional[int] = 
 
 
 async def upload_aggregate(content: dict):
-    account = get_fallback_account()
-    async with AuthenticatedAlephHttpClient(account) as client:
+    account = get_fallback_account(path=KEY_PATH)
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
         message, status = await client.create_aggregate(
             key=AGGREGATE_KEY,
             content=content,
@@ -97,8 +104,8 @@ async def create_post(post_content: dict):
 
     storage_engine = "storage"
 
-    account = get_fallback_account()
-    async with AuthenticatedAlephHttpClient(account) as client:
+    account = get_fallback_account(path=KEY_PATH)
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
         message, status = await client.create_post(
             post_type='test',
             post_content=post_content,
@@ -109,8 +116,8 @@ async def create_post(post_content: dict):
 
 
 async def get_post(hash: str):
-    account = get_fallback_account()
-    async with AuthenticatedAlephHttpClient(account) as client:
+    account = get_fallback_account(path=KEY_PATH)
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
         message = await client.get_message(hash)
     return message.json()
 
@@ -123,8 +130,8 @@ async def update_post(post_content: str, hash_content: str):
         raise ValueError("hash is required to update a post")
 
     storage_engine = "storage"
-    account = get_fallback_account()
-    async with AuthenticatedAlephHttpClient(account) as client:
+    account = get_fallback_account(path=KEY_PATH)
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
         message, status = await client.create_post(
             post_type='test',
             post_content=post_content,
@@ -134,19 +141,11 @@ async def update_post(post_content: str, hash_content: str):
         )
     return message, status
 
-# async def upload_aggregate(key, content):
-#     account = get_fallback_account()
-#     async with AuthenticatedAlephHttpClient(account) as client:
-#         message, status = await client.create_aggregate(
-#             key=key,
-#             content=content,
-#             channel=CHANNEL,
-#         )
-#     return message, status
 
 # def read_file_bytes(file_path: str) -> bytes:
 #     with open(file_path, "rb") as file:
 #         return file.read()
+
 # async def main():
 #     message, status = await upload_aggregate({'age': None})
 #     print(message, status)
