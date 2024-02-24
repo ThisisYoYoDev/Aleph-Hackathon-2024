@@ -73,14 +73,21 @@ async def get_store(item_hash: str):
         else:
             return HTTPException(status_code=404, detail="Item not found")
 
-
 @app.get("/song_list")
-async def get_song_list(song_name: Optional[str] = None, start: Optional[int] = 0, limit: Optional[int] = 32):
+async def get_song_list(song_name: Optional[str] = None, song_hash: Optional[str] = None, start: Optional[int] = 0, limit: Optional[int] = 32):
     account = get_fallback_account(path=KEY_PATH)
     async with AuthenticatedAlephHttpClient(account,) as client:
         message = await client.fetch_aggregate(account.get_address(), AGGREGATE_KEY)
+        message = {k: v for k, v in message.items() if isinstance(v, dict)}
+
         if song_name:
             filtered_songs = {key: value for key, value in message.items() if song_name.lower() in key.lower()}
+            if not filtered_songs:
+                raise HTTPException(status_code=404, detail="Song not found")
+            paginated_songs = dict(list(filtered_songs.items())[start: start + limit])
+            next_token = start + limit if start + limit < len(filtered_songs) else None
+        elif song_hash:
+            filtered_songs = {key: value for key, value in message.items() if song_hash == value['item_hash']}
             if not filtered_songs:
                 raise HTTPException(status_code=404, detail="Song not found")
             paginated_songs = dict(list(filtered_songs.items())[start: start + limit])
@@ -151,6 +158,23 @@ async def upload_aggregate(content: dict):
         )
     return message, status
 
+@app.delete("/remove_music")
+async def remove_music(content_hash: str):
+    if not content_hash:
+        raise ValueError("content_hash is required")
+
+    key, value = list((await get_song_list(song_hash=content_hash))['songs'].items())[0]
+
+    await upload_aggregate({ key: None })
+    account = get_fallback_account(path=KEY_PATH)
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
+        message, status = await client.forget(
+            hashes=[value['item_hash']],
+            reason='revoke',
+            address=account.get_address(),
+            channel=CHANNEL
+        )
+    return message, status
 
 async def create_post(post_content: dict):
     if not post_content:
