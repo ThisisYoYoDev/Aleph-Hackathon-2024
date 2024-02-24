@@ -28,20 +28,29 @@ app.add_middleware(
 
 
 @app.post("/upload")
-async def upload_store(file: UploadFile = File(...)):
-    contents = file.file.read()
-
+async def upload_store(cid: str, filename: str, cid_image: str | None = None):
     account = get_fallback_account(path=KEY_PATH)
     async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_store(
-            file_content=contents,
+            file_hash=cid,
             channel=CHANNEL,
             storage_engine="ipfs",
         )
+
+        message_img = None
+        if cid_image:
+            message_img, _ = await client.create_store(
+                file_hash=cid_image,
+                channel=CHANNEL,
+                storage_engine="ipfs",
+            )
+
         await upload_aggregate({
-            file.filename: {
+            filename: {
                 'cid': message.content.item_hash,
-                'item_hash': message.item_hash
+                'cid_image': cid_image,
+                'item_hash': message.item_hash,
+                'item_hash_image': message_img.item_hash if message_img else None
             }
         })
     return message, status
@@ -185,4 +194,3 @@ async def update_post(post_content: str, hash_content: str):
             storage_engine=storage_engine,
         )
     return message, status
-
