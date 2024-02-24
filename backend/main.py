@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from aleph.sdk.chains.ethereum import get_fallback_account
 from aleph.sdk.client import AuthenticatedAlephHttpClient
@@ -7,6 +8,16 @@ import io
 
 CHANNEL = "TEAM-7"
 app = FastAPI()
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post("/upload")
 async def upload_store(file: UploadFile = File(...)):
@@ -43,14 +54,26 @@ async def get_store(item_hash: str):
             return HTTPException(status_code=404, detail="Item not found")
 
 
+# async def upload_aggregate(key, content):
+#     account = get_fallback_account()
+#     async with AuthenticatedAlephHttpClient(account) as client:
+#         message, status = await client.create_aggregate(
+#             key=key,
+#             content=content,
+#             channel=CHANNEL,
+#         )
+#     return message, status
+
 # def read_file_bytes(file_path: str) -> bytes:
 #     with open(file_path, "rb") as file:
 #         return file.read()
 
 
 # async def main():
-#     message, status = await upload_store(read_file_bytes("Katy Perry - I Kissed A Girl.mp3"))
-#     print(message.item_hash)
+    # message, status = await upload_aggregate("test", "test")
+    # print(message, status)
+    # message, status = await upload_store(read_file_bytes("Katy Perry - I Kissed A Girl.mp3"))
+    # print(message.item_hash)
 
 
 # import asyncio
