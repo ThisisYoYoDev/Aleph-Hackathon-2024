@@ -6,13 +6,7 @@ from aleph_message.models import StoreMessage, ItemType
 import io
 
 CHANNEL = "TEAM-7"
-
 app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"Toni": "Le Gros LARD"}
-
 
 @app.post("/upload")
 async def upload_store(file: UploadFile = File(...)):
@@ -29,6 +23,7 @@ async def upload_store(file: UploadFile = File(...)):
             storage_engine=storage_engine,
         )
     return message, status
+
 
 @app.get("/download/{item_hash}")
 async def get_store(item_hash: str):
@@ -47,19 +42,18 @@ async def get_store(item_hash: str):
         else:
             return HTTPException(status_code=404, detail="Item not found")
 
-def read_file_bytes(file_path: str) -> bytes:
-    with open(file_path, "rb") as file:
-        return file.read()
+
+# def read_file_bytes(file_path: str) -> bytes:
+#     with open(file_path, "rb") as file:
+#         return file.read()
 
 
-async def main():
-    message, status = await upload_store(read_file_bytes("Katy Perry - I Kissed A Girl.mp3"))
-    print(message.item_hash)
-    # data = await get_store("c577b462c7019e61f4cafff63a1ab363c81f0a9cff09c13e747de41c00aa453b")
-    # print(data)
+# async def main():
+#     message, status = await upload_store(read_file_bytes("Katy Perry - I Kissed A Girl.mp3"))
+#     print(message.item_hash)
 
 
-import asyncio
+# import asyncio
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())
