@@ -1,51 +1,62 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi.responses import StreamingResponse
 from aleph.sdk.chains.ethereum import get_fallback_account
 from aleph.sdk.client import AuthenticatedAlephHttpClient
 from aleph_message.models import StoreMessage, ItemType
-import json
+import io
 
 CHANNEL = "TEAM-7"
 
-# app = FastAPI()
+app = FastAPI()
 
-# @app.get("/")
-# def read_root():
-#     return {"Toni": "Le Gros LARD"}
+@app.get("/")
+def read_root():
+    return {"Toni": "Le Gros LARD"}
 
 
-async def upload_store(file_content: bytes):
-    if not file_content:
-        raise ValueError("file_content is required")
-
+@app.post("/upload")
+async def upload_store(file: UploadFile = File(...)):
+    contents = file.file.read()
     storage_engine = "storage"
-
-    if len(file_content) > 2 * 1024 * 1024:
+    if len(contents) > 2 * 1024 * 1024:
          storage_engine = "ipfs"
+
     account = get_fallback_account()
     async with AuthenticatedAlephHttpClient(account) as client:
         message, status = await client.create_store(
-            file_content=file_content,
+            file_content=file.file.read(),
             channel=CHANNEL,
             storage_engine=storage_engine,
         )
     return message, status
 
-async def get_store(item_hash: str) -> bytes:
+@app.get("/download/{item_hash}")
+async def get_store(item_hash: str):
     account = get_fallback_account()
     async with AuthenticatedAlephHttpClient(account) as client:
         message = await client.get_message(item_hash, StoreMessage)
+        buffer = io.BytesIO()
         if message.content.item_type == ItemType.storage:
-            data = await client.download_file(message.content.item_hash)
+            await client.download_file_to_buffer(message.content.item_hash, output_buffer=buffer)
+            buffer.seek(0)
+            return StreamingResponse(buffer, media_type="audio/mpeg")
         elif message.content.item_type == ItemType.ipfs:
-            data = await client.download_file_ipfs(message.content.item_hash)
+            await client.download_file_ipfs_to_buffer(message.content.item_hash, output_buffer=buffer)
+            buffer.seek(0)
+            return StreamingResponse(buffer, media_type="audio/mpeg")
         else:
-            print("Not recognized storage type")
-    return data
+            return HTTPException(status_code=404, detail="Item not found")
+
+def read_file_bytes(file_path: str) -> bytes:
+    with open(file_path, "rb") as file:
+        return file.read()
+
 
 async def main():
-    message, status = await upload_store(b"Hello, World!")
-    data = await get_store(message.item_hash)
-    print(data)
+    message, status = await upload_store(read_file_bytes("Katy Perry - I Kissed A Girl.mp3"))
+    print(message.item_hash)
+    # data = await get_store("c577b462c7019e61f4cafff63a1ab363c81f0a9cff09c13e747de41c00aa453b")
+    # print(data)
 
 
 import asyncio
