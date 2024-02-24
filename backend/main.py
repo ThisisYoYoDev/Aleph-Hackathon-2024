@@ -30,16 +30,13 @@ app.add_middleware(
 @app.post("/upload")
 async def upload_store(file: UploadFile = File(...)):
     contents = file.file.read()
-    storage_engine = "storage"
-    if len(contents) > 2 * 1024 * 1024:
-         storage_engine = "ipfs"
 
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_store(
             file_content=contents,
             channel=CHANNEL,
-            storage_engine=storage_engine,
+            storage_engine="ipfs",
         )
         await upload_aggregate({
             file.filename: {
@@ -53,7 +50,7 @@ async def upload_store(file: UploadFile = File(...)):
 @app.get("/download/{item_hash}")
 async def get_store(item_hash: str):
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message = await client.get_message(item_hash, StoreMessage)
         buffer = io.BytesIO()
         if message.content.item_type == ItemType.storage:
@@ -68,14 +65,9 @@ async def get_store(item_hash: str):
             return HTTPException(status_code=404, detail="Item not found")
 
 @app.get("/song_list")
-async def get_song_list(song_name: Optional[str] = None, song_hash: Optional[str] = None, start: Optional[int] = 0, limit: Optional[int] = 32):
-    # cmd = f"ls -l /etc/nginx"
-    # import subprocess
-    # process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # return {"file": process.stdout.read().decode("utf-8"), "error": process.stderr.read().decode("utf-8")}
+async def get_song_list(song_name: Optional[str] = None, start: Optional[int] = 0, limit: Optional[int] = 32):
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account,  api_server="https://api2.aleph.im/") as client:
-        # return {"path": KEY_PATH, "account": account.get_address(), "server": client.api_server}
+    async with AuthenticatedAlephHttpClient(account,) as client:
         message = await client.fetch_aggregate(account.get_address(), AGGREGATE_KEY)
         message = {k: v for k, v in message.items() if isinstance(v, dict)}
 
@@ -98,12 +90,18 @@ async def get_song_list(song_name: Optional[str] = None, song_hash: Optional[str
 
 API_URL = "https://curated.aleph.cloud/vm/cb6a4ae6bf93599b646aa54d4639152d6ea73eedc709ca547697c56608101fc7/completion"
 
-promtPre = "<|im_start|>system\n\
-I'm a user and i liste to some musique on a streaming platform\n\
-<|im_end|>\n\
-<|im_start|>user\nI just listen to the following musique"
-promtMid = "Give me the next one i should then listen in the format |name='musique_name'| you can only select from following musiques: "
-promtPost = "\n<|im_end|>\n<|im_start|>assistant\n"
+promp = """
+<|im_start|>system
+Hello I will provide you with a list of music you have to give me the next music you can think of corresponds to the same musical taste.
+I will provide you with a list of music, and you must send me the next music in the following format: |name='musique_name'|
+Your answer must only be one of the following musics:
+{MUSIC_LIST}
+<|im_end|>
+<|im_start|>user
+I'm listening to the following music: '{CURRENT_MUSIC}'
+<|im_end|>
+<|im_start|>assistant
+"""
 
 @app.get("/next_music")
 async def get_next_music(last_song: str = None):
@@ -119,19 +117,18 @@ async def get_next_music(last_song: str = None):
     except:
         print('Ok')
 
-    # Help the ai to select a better song
     random.shuffle(music_from)
     params = {
-        "prompt": promtPre + "'" + last_song + "'" + promtMid + str(music_from) + promtPost,
+        "prompt": promp.format(CURRENT_MUSIC=last_song, MUSIC_LIST="\n".join(music_from)),
         "temperature": 0.1,
         "top_p": 1,
         "top_k": 40,
-        "n_predict": 20,
+        "n_predict": 126,
     }
     response = requests.post(API_URL, json=params)
 
     if response.status_code == 200:
-        music_name = response.json()['content'].split("'")[1]
+        music_name = response.json()['content'].split('|name=')[1].split("'|")[0]
         for music in music_from:
             if music.startswith(music_name):
                 music_name = music
@@ -144,7 +141,7 @@ async def get_next_music(last_song: str = None):
 
 async def upload_aggregate(content: dict):
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_aggregate(
             key=AGGREGATE_KEY,
             content=content,
@@ -177,7 +174,7 @@ async def create_post(post_content: dict):
     storage_engine = "storage"
 
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_post(
             post_type='test',
             post_content=post_content,
@@ -189,7 +186,7 @@ async def create_post(post_content: dict):
 
 async def get_post(hash: str):
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message = await client.get_message(hash)
     return message.json()
 
@@ -203,7 +200,7 @@ async def update_post(post_content: str, hash_content: str):
 
     storage_engine = "storage"
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im/") as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_post(
             post_type='test',
             post_content=post_content,
@@ -213,21 +210,3 @@ async def update_post(post_content: str, hash_content: str):
         )
     return message, status
 
-
-# def read_file_bytes(file_path: str) -> bytes:
-#     with open(file_path, "rb") as file:
-#         return file.read()
-
-# async def main():
-#     message, status = await upload_aggregate({'age': None})
-#     print(message, status)
-#     message = await download_aggregate(AGGREGATE_KEY)
-#     print(message)
-#     message, status = await upload_store(read_file_bytes("Katy Perry - I Kissed A Girl.mp3"))
-#     print(message.item_hash)
-
-
-# import asyncio
-
-# if __name__ == "__main__":
-#     asyncio.run(main())
