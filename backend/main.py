@@ -65,7 +65,7 @@ async def get_store(item_hash: str):
             return HTTPException(status_code=404, detail="Item not found")
 
 @app.get("/song_list")
-async def get_song_list(song_name: Optional[str] = None, start: Optional[int] = 0, limit: Optional[int] = 32):
+async def get_song_list(song_name: Optional[str] = None, song_hash: Optional[str] = None, start: Optional[int] = 0, limit: Optional[int] = 32):
     account = get_fallback_account(path=KEY_PATH)
     async with AuthenticatedAlephHttpClient(account,) as client:
         message = await client.fetch_aggregate(account.get_address(), AGGREGATE_KEY)
