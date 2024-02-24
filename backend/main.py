@@ -91,7 +91,58 @@ async def upload_aggregate(content: dict):
     return message, status
 
 
+async def create_post(post_content: dict):
+    if not post_content:
+        raise ValueError("post_content is required")
 
+    storage_engine = "storage"
+
+    account = get_fallback_account()
+    async with AuthenticatedAlephHttpClient(account) as client:
+        message, status = await client.create_post(
+            post_type='test',
+            post_content=post_content,
+            channel=CHANNEL,
+            storage_engine=storage_engine,
+        )
+    return message, status
+
+
+async def get_post(hash: str):
+    account = get_fallback_account()
+    async with AuthenticatedAlephHttpClient(account) as client:
+        message = await client.get_message(hash)
+    return message.json()
+
+
+async def update_post(post_content: str, hash_content: str):
+    if not post_content:
+        raise ValueError("post_content is required to update")
+
+    if not hash:
+        raise ValueError("hash is required to update a post")
+
+    storage_engine = "storage"
+    account = get_fallback_account()
+    async with AuthenticatedAlephHttpClient(account) as client:
+        message, status = await client.create_post(
+            post_type='test',
+            post_content=post_content,
+            ref=hash_content,
+            channel=CHANNEL,
+            storage_engine=storage_engine,
+        )
+    return message, status
+
+# async def upload_aggregate(key, content):
+#     account = get_fallback_account()
+#     async with AuthenticatedAlephHttpClient(account) as client:
+#         message, status = await client.create_aggregate(
+#             key=key,
+#             content=content,
+#             channel=CHANNEL,
+#         )
+#     return message, status
 
 # def read_file_bytes(file_path: str) -> bytes:
 #     with open(file_path, "rb") as file:
