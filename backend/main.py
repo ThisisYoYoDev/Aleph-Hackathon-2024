@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from aleph.sdk.chains.ethereum import get_fallback_account
@@ -28,32 +28,26 @@ app.add_middleware(
 
 
 @app.post("/upload")
-async def upload_store(cid: str, filename: str, cid_image: str | None = None):
+async def upload_store(file: UploadFile = File(...)):
+    contents = file.file.read()
+
     account = get_fallback_account(path=KEY_PATH)
     async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_store(
-            file_hash=cid,
+            file_content=contents,
             channel=CHANNEL,
             storage_engine="ipfs",
         )
-
-        message_img = None
-        if cid_image:
-            message_img, _ = await client.create_store(
-                file_hash=cid_image,
-                channel=CHANNEL,
-                storage_engine="ipfs",
-            )
-
         await upload_aggregate({
-            filename: {
+            file.filename: {
                 'cid': message.content.item_hash,
-                'cid_image': cid_image,
+                'cid_image': None,
                 'item_hash': message.item_hash,
-                'item_hash_image': message_img.item_hash if message_img else None
+                'item_hash_image': None,
             }
         })
     return message, status
+
 
 
 @app.get("/download/{item_hash}")
