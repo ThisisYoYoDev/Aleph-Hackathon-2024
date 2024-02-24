@@ -32,7 +32,7 @@ async def upload_store(file: UploadFile = File(...)):
     contents = file.file.read()
 
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account) as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_store(
             file_content=contents,
             channel=CHANNEL,
@@ -50,7 +50,7 @@ async def upload_store(file: UploadFile = File(...)):
 @app.get("/download/{item_hash}")
 async def get_store(item_hash: str):
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account) as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message = await client.get_message(item_hash, StoreMessage)
         buffer = io.BytesIO()
         if message.content.item_type == ItemType.storage:
@@ -110,7 +110,6 @@ async def get_next_music(last_song: str = None):
     except:
         print('Ok')
 
-    # Help the ai to select a better song
     random.shuffle(music_from)
     params = {
         "prompt": promp.format(CURRENT_MUSIC=last_song, MUSIC_LIST="\n".join(music_from)),
@@ -135,7 +134,7 @@ async def get_next_music(last_song: str = None):
 
 async def upload_aggregate(content: dict):
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account) as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_aggregate(
             key=AGGREGATE_KEY,
             content=content,
@@ -151,7 +150,7 @@ async def create_post(post_content: dict):
     storage_engine = "storage"
 
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account) as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_post(
             post_type='test',
             post_content=post_content,
@@ -163,7 +162,7 @@ async def create_post(post_content: dict):
 
 async def get_post(hash: str):
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account) as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message = await client.get_message(hash)
     return message.json()
 
@@ -177,7 +176,7 @@ async def update_post(post_content: str, hash_content: str):
 
     storage_engine = "storage"
     account = get_fallback_account(path=KEY_PATH)
-    async with AuthenticatedAlephHttpClient(account) as client:
+    async with AuthenticatedAlephHttpClient(account, api_server="https://api2.aleph.im", allow_unix_sockets=False) as client:
         message, status = await client.create_post(
             post_type='test',
             post_content=post_content,
