@@ -5,6 +5,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Register } from "./pages/register";
 import { Login } from "./pages/login";
 import { Dashboard } from "./pages/dashboard";
+import PlaylistManager from "./pages/test";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Dashboard />,
+  },
+  {
+    path: "/test",
+    element: <PlaylistManager />,
   },
 ]);
 

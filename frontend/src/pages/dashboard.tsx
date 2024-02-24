@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
   VStack,
   Text,
@@ -11,12 +12,54 @@ import {
   SliderFilledTrack,
   SliderThumb,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { useAudioPlayer } from "../utils/sound";
+import PlaylistManager from "./test";
+
+export interface Song {
+  cid: string;
+  item_hash: string;
+}
 
 export function Dashboard() {
   const [isMusicSelected, setIsMusicSelected] = useState<boolean>(false);
+  const [songs, setSong] = useState([]);
+  const [CID, setCID] = useState<string>("");
+  const [currentPlaying, setCurrentPlaying] = useState<string>("");
+  const [search, setSearch] = useState<string>("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [playlistSearch, setPlaylistSearch] = useState<string>("");
+  const { isPlaying, togglePlayPause, seek, duration, setVolume } =
+    useAudioPlayer({
+      url: `https://ipfs.aleph.im/ipfs/${CID}`,
+    });
 
-  const playMusic = () => setIsMusicSelected(true);
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}m${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  const handleSearch = (search: any) => {
+    setSearch(search);
+  };
+
+  const getPlaylists = async () => {
+    const { songs } = (await axios.get(`http://localhost:8000/song_list`)).data;
+    setSong(songs);
+    console.log(Object.entries(songs)[5][0]);
+  };
+
+  const handleVStackClick = (cid: string, key: string) => {
+    console.log("CID clicked:", cid);
+    setCID(cid);
+    setCurrentPlaying(key);
+  };
+
+  useEffect(() => {
+    getPlaylists();
+  }, []);
 
   return (
     <VStack
@@ -48,10 +91,8 @@ export function Dashboard() {
               <Text color={"#ffffff"} fontSize={"20px"}>
                 Your playlist
               </Text>
-              <Text color={"orange"} fontSize={"40px"} cursor={"pointer"}>
-                +
-              </Text>
             </VStack>
+            <PlaylistManager songs={songs} playlistSearch={playlistSearch} />
           </VStack>
           <VStack
             flex={3}
@@ -83,9 +124,17 @@ export function Dashboard() {
               <Input
                 w={"500px"}
                 h={"50px"}
+                focusBorderColor="transparent"
                 backgroundColor={"#4E4E4E"}
                 placeholder="What do you want to listen to?"
                 color={"#ffffff"}
+                _hover={{
+                  border: "1px solid #ffffff",
+                }}
+                _focus={{
+                  border: "1px solid orange",
+                }}
+                onChange={(e) => handleSearch(e.target.value)}
               />
             </VStack>
 
@@ -105,25 +154,42 @@ export function Dashboard() {
                 flexWrap={"wrap"}
                 gap={"20px"}
               >
-                {[...Array(8)].map((_, i) => (
-                  <VStack
-                    key={i}
-                    w="200px"
-                    h="200px"
-                    backgroundColor="#4E4E4E"
-                    borderRadius={"8px"}
-                    m="2"
-                    border={"1px solid transparent"}
-                    boxShadow="rgba(0, 0, 0, 0.1) 0px 4px 12px"
-                    cursor={"pointer"}
-                    _hover={{
-                      border: "1px solid orange",
-                    }}
-                    onClick={playMusic}
-                  >
-                    <Text color="#ffffff">Item {i}</Text>
-                  </VStack>
-                ))}
+                {Object.entries(songs)
+                  .filter(
+                    ([key, value]) =>
+                      key.endsWith(".mp3") && typeof value === "object",
+                  )
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  .filter(([key, value]) => key.includes(search))
+                  .map(([key, value]) => {
+                    const songDetails = value as Song;
+                    return (
+                      <VStack
+                        key={key}
+                        w="200px"
+                        h="200px"
+                        backgroundColor="#4E4E4E"
+                        borderRadius="8px"
+                        m="2"
+                        border="1px solid transparent"
+                        boxShadow="rgba(0, 0, 0, 0.1) 0px 4px 12px"
+                        cursor="pointer"
+                        _hover={{
+                          border: "1px solid orange",
+                        }}
+                        onClick={() => {
+                          handleVStackClick(songDetails.cid, key);
+                          setIsMusicSelected(true);
+                        }}
+                        justifyContent={"center"}
+                        alignItems={"center"}
+                      >
+                        <Text color="#ffffff" margin={"8px"}>
+                          {key}
+                        </Text>
+                      </VStack>
+                    );
+                  })}
               </VStack>
             </Box>
           </VStack>
@@ -138,8 +204,15 @@ export function Dashboard() {
             minH={"90px"}
             flexDirection={"row"}
           >
-            <VStack flex={1} h={"100%"} backgroundColor={"red"}>
-              head icon
+            <VStack
+              flex={1}
+              h={"100%"}
+              justifyContent={"center"}
+              alignItems={"center"}
+            >
+              <Text color={"#ffffff"} margin={"8px"}>
+                {currentPlaying}
+              </Text>
             </VStack>
             <VStack flex={3} h={"100%"}>
               <VStack
@@ -149,19 +222,41 @@ export function Dashboard() {
                 alignItems={"center"}
                 justifyContent={"center"}
                 gap={"60px"}
+                marginTop={"8px"}
               >
-                <Image src="/nextr.png" boxSize={"30px"} />
-                <Image src="/pause.png" boxSize={"50px"} />
-                <Image src="/nextl.png" boxSize={"30px"} />
-              </VStack>
-              <Stack spacing={5} w={"100%"} h={"20px"}>
-                <Progress
-                  colorScheme="orange"
-                  size="sm"
-                  value={50}
-                  borderRadius={"8px"}
+                <Image src="/nextr.png" boxSize={"20px"} cursor={"pointer"} />
+                <Image
+                  src={isPlaying ? "/pause.png" : "pb.png"}
+                  boxSize={"40px"}
+                  onClick={togglePlayPause}
+                  cursor={"pointer"}
                 />
-              </Stack>
+                <Image src="/nextl.png" boxSize={"20px"} cursor={"pointer"} />
+              </VStack>
+              <VStack
+                flexDirection={"row"}
+                h={"100%"}
+                w={"100%"}
+                justifyContent={"center"}
+                alignItems={"center"}
+                gap={"20px"}
+              >
+                <Text
+                  color={"#ffffff"}
+                  marginBottom={"12px"}
+                >{`${formatTime(Math.round(seek))}`}</Text>
+                <Stack spacing={5} w={"60%"} h={"20px"}>
+                  <Progress
+                    colorScheme="orange"
+                    h={"8px"}
+                    value={(Math.round(seek) * 100) / 186}
+                    borderRadius={"8px"}
+                  />
+                </Stack>
+                <Text color={"#ffffff"} marginBottom={"12px"}>
+                  {formatTime(Math.round(duration))}
+                </Text>
+              </VStack>
             </VStack>
             <VStack flex={1} h={"100%"}>
               <VStack
@@ -178,6 +273,7 @@ export function Dashboard() {
                   defaultValue={30}
                   w={"40%"}
                   colorScheme="orange"
+                  onChange={setVolume}
                 >
                   <SliderTrack>
                     <SliderFilledTrack />
