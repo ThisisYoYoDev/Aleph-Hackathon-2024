@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import axios from "axios";
 import {
   VStack,
@@ -17,6 +18,7 @@ import {
   AccordionItem,
   AccordionPanel,
   useMediaQuery,
+  Button,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
@@ -25,6 +27,7 @@ import { useNavigate } from "react-router-dom";
 import useLocalStorage from "../utils/localStorage";
 import { Playlist } from "./test";
 import { ENV_VAR } from "../utils/env";
+import { PlaylistComponent } from "../components/pl";
 
 export interface Song {
   cid: string;
@@ -41,14 +44,14 @@ export function Dashboard() {
   const [CID, setCID] = useState<string>("");
   const [currentPlaying, setCurrentPlaying] = useState<string>("");
   const [search, setSearch] = useState<string>("");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [playlistSearch, setPlaylistSearch] = useState<string>("");
   const { isPlaying, togglePlayPause, seek, duration, setVolume, reStart } =
     useAudioPlayer({
       url: `https://ipfs.aleph.im/ipfs/${CID}`,
     });
 
-  const [isLargerThan1500] = useMediaQuery("(min-width: 1500px)");
+  const [clickedMusic, setClickedMusic] = useState<string>("");
+
+  const [isLargerThan1500] = useMediaQuery("(min-width: 1400px)");
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [playlists, setPlaylists] = useLocalStorage<Playlist[]>(
@@ -70,8 +73,20 @@ export function Dashboard() {
     const { songs } = (await axios.get(`${ENV_VAR.BACKEND_URL}/song_list`))
       .data;
     setSong(songs);
-    console.log(Object.entries(songs)[5][0]);
   };
+
+  function findCidBySongName(songs: any, songName: string): string | null {
+    // Parcourir les clés de l'objet songs
+    for (const key in songs) {
+      console.log(key);
+      if (key === songName) {
+        // Si le nom de la musique correspond, retourner le cid
+        return songs[key].cid;
+      }
+    }
+    // Si aucune musique correspondante n'est trouvée, retourner null
+    return null;
+  }
 
   const getNextSong = async () => {
     try {
@@ -116,8 +131,14 @@ export function Dashboard() {
   }, []);
 
   useEffect(() => {
-    console.log(isLargerThan1500); // Voir la valeur actuelle dans la console
-  }, [isLargerThan1500]);
+    const x = findCidBySongName(songs, clickedMusic);
+    console.log(x, clickedMusic);
+    if (x !== undefined && x !== null) {
+      setCID(x);
+      setIsMusicSelected(true);
+      setCurrentPlaying(clickedMusic);
+    }
+  }, [clickedMusic]);
 
   return (
     <VStack
@@ -139,7 +160,7 @@ export function Dashboard() {
               h={"100%"}
               borderRadius={"8px"}
               backgroundColor={"#333333"}
-              border={"1px solid #fd923460"}
+              border={"1px solid #ead8ba5f"}
             >
               <VStack
                 w={"100%"}
@@ -147,45 +168,39 @@ export function Dashboard() {
                 justifyContent={"space-evenly"}
               >
                 <Text
-                  color={"#ffffff"}
+                  color={"#ffffff86"}
                   fontSize={"20px"}
-                  onClick={() => navigate("/playlist")}
-                  marginBottom={"40px"}
-                  cursor={"pointer"}
+                  marginBottom={"20px"}
                 >
                   Your playlist
                 </Text>
-
-                <Accordion allowToggle w={"100%"}>
-                  {playlists
-                    .filter((playlist) => playlist.name.length > 1)
-                    .map((playlist, index) => {
-                      return (
-                        <AccordionItem key={index}>
-                          <AccordionButton
-                            _expanded={{ bg: "orange", color: "white" }}
-                          >
-                            <Box flex="1" textAlign="left">
-                              <Text color={"#ffffff"} as={"b"}>
-                                {playlist.name}
-                              </Text>
-                            </Box>
-                            <AccordionIcon />
-                          </AccordionButton>
-                          <AccordionPanel pb={4}>
-                            <VStack>
-                              {playlist.musics.map((music, musicIndex) => (
-                                <Text key={musicIndex} color={"#ffffff"}>
-                                  {music.title}
-                                </Text>
-                              ))}
-                            </VStack>
-                          </AccordionPanel>
-                        </AccordionItem>
-                      );
-                    })}
-                </Accordion>
               </VStack>
+
+              <PlaylistComponent
+                playlists={playlists}
+                setClickedMusic={setClickedMusic}
+              ></PlaylistComponent>
+              <Button
+                fontSize={"14px"}
+                w={"200px"}
+                backgroundColor={"#ead8ba5f"}
+                onClick={() => navigate("/playlist")}
+                cursor={"pointer"}
+                h={"60px"}
+              >
+                Add a playlist
+              </Button>
+              <Button
+                fontSize={"14px"}
+                w={"300px"}
+                backgroundColor={"#ead8ba5f"}
+                onClick={() => navigate("/song")}
+                cursor={"pointer"}
+                marginBottom={"40px"}
+                h={"60px"}
+              >
+                Upload a song
+              </Button>
             </VStack>
           )}
           <VStack
@@ -193,7 +208,7 @@ export function Dashboard() {
             h={"100%"}
             borderRadius={"8px"}
             backgroundColor={"#333333"}
-            border={"1px solid #fd923460"}
+            border={"1px solid #ead8ba5f"}
           >
             <VStack
               flexDirection={"row"}
@@ -204,33 +219,34 @@ export function Dashboard() {
               <VStack
                 w={"50px"}
                 h={"50px"}
-                backgroundColor={"orange"}
+                backgroundColor={"#ead8ba5f"}
                 borderRadius={"100px"}
                 justifyContent={"center"}
                 marginLeft={"30px"}
                 cursor={"pointer"}
               >
-                <Text
-                  color={"#ffffff"}
-                  as={"b"}
-                  fontSize={"16px"}
-                  onClick={() => navigate("/song")}
-                >
+                <Text color={"#ffffff"} as={"b"} fontSize={"16px"}>
                   N
                 </Text>
               </VStack>
               <Input
-                w={"40%"}
+                w={"50%"}
+                maxW={"400px"}
                 h={"50px"}
                 focusBorderColor="transparent"
-                backgroundColor={"#4E4E4E"}
+                backgroundColor={"transparent"}
                 placeholder="What do you want to listen to?"
+                _placeholder={{
+                  color: "#ead8ba5f",
+                }}
                 color={"#ffffff"}
+                border={"1px solid transparent"}
+                borderBottom={"1px solid #ead8ba5f"}
                 _hover={{
                   border: "1px solid #ffffff",
                 }}
                 _focus={{
-                  border: "1px solid orange",
+                  border: "1px solid #ead8ba5f",
                 }}
                 onChange={(e) => handleSearch(e.target.value)}
               />
@@ -239,24 +255,24 @@ export function Dashboard() {
             {/* Object VStack Container */}
             <Box
               w="100%"
-              h="100%"
+              h="80%"
               flex={1}
-              marginTop={{ base: "60px", md: "120px" }}
-              overflow="scroll"
               display="flex"
               justifyContent="center"
-              alignItems="center"
+              alignItems="flex-start"
+              overflow="hidden" // Empêche le débordement du contenu
             >
               <VStack
                 w="100%"
-                maxW={{ sm: "90%", md: "80%", lg: "1200px" }}
+                maxW={{ base: "85%", sm: "90%", md: "80%", lg: "1200px" }} // Ajuste la largeur max pour les très petits écrans
                 paddingY="4"
-                maxH="610px"
+                // maxH="500px"
                 h="auto"
                 flexWrap="wrap"
                 alignItems="center"
                 justifyContent="center"
                 flexDirection={{ base: "column", sm: "row" }}
+                overflow="scroll"
               >
                 {Object.entries(songs)
                   .filter(
@@ -270,27 +286,48 @@ export function Dashboard() {
                     return (
                       <VStack
                         key={key}
-                        w={{ base: "150px", sm: "200px" }}
-                        h={{ base: "150px", sm: "200px" }}
+                        w={{ base: "120px", sm: "150px", md: "200px" }}
+                        h={{ base: "120px", sm: "150px", md: "200px" }}
                         backgroundColor="#4E4E4E"
+                        overflow={"hidden"}
                         borderRadius="8px"
-                        m="2"
+                        m={{ base: "1", sm: "2" }}
                         border="1px solid transparent"
                         boxShadow="rgba(0, 0, 0, 0.1) 0px 4px 12px"
                         cursor="pointer"
                         _hover={{
-                          border: "1px solid orange",
+                          border: "1px solid #ead8ba5f",
                         }}
                         onClick={() => {
                           handleVStackClick(songDetails.cid, key);
                           setIsMusicSelected(true);
                         }}
-                        justifyContent="center"
+                        justifyContent="flex-end"
+                        textAlign={"center"}
                         alignItems="center"
                       >
-                        <Text color="#ffffff" margin="8px">
-                          {key}
-                        </Text>
+                        <VStack
+                          flex={1}
+                          justifyContent={"center"}
+                          height={"100%"}
+                          h={"80%"}
+                        >
+                          <Image
+                            src="/musics.png"
+                            objectFit="cover"
+                            borderRadius={"12px"}
+                            w={"90%"}
+                            h={"90%"}
+                            boxShadow={
+                              "rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;"
+                            }
+                          />
+                        </VStack>
+                        <VStack flex={1} h={"20%"} overflow={"hidden"}>
+                          <Text color="#ffffff" margin="8px" fontSize={"14px"}>
+                            {key}
+                          </Text>
+                        </VStack>
                       </VStack>
                     );
                   })}
@@ -304,7 +341,7 @@ export function Dashboard() {
             w={"100%"}
             borderRadius={"8px"}
             backgroundColor={"#333333"}
-            border={"1px solid #fd923460"}
+            border={"1px solid #ead8ba5f"}
             minH={"90px"}
             flexDirection={"row"}
           >
@@ -361,7 +398,7 @@ export function Dashboard() {
                 >{`${formatTime(Math.round(seek))}`}</Text>
                 <Stack spacing={5} w={"60%"} h={"20px"}>
                   <Progress
-                    colorScheme="orange"
+                    colorScheme="telegram"
                     h={"8px"}
                     value={(Math.round(seek) * 100) / 186}
                     borderRadius={"8px"}
@@ -386,7 +423,7 @@ export function Dashboard() {
                   aria-label="slider-ex-1"
                   defaultValue={30}
                   w={"40%"}
-                  colorScheme="orange"
+                  colorScheme="#ead8ba5f"
                   onChange={setVolume}
                 >
                   <SliderTrack>

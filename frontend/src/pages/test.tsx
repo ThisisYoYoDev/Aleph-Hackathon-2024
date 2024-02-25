@@ -88,7 +88,7 @@ const PlaylistManager = (songs: any, playlistSearch: string) => {
               />
               <Button
                 onClick={() => addPlaylist(newPlaylistName)}
-                colorScheme="orange"
+                backgroundColor={"#ead8ba5f"}
                 w={"200px"}
                 h={"50px"}
               >
@@ -139,7 +139,7 @@ const PlaylistManager = (songs: any, playlistSearch: string) => {
               </Select>
 
               <Button
-                colorScheme="orange"
+                backgroundColor={"#ead8ba5f"}
                 onClick={() => {
                   const musicToAdd = { title: newMusic }; // Ajustez selon vos besoins
                   if (selectedPlaylistId) {

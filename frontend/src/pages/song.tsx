@@ -47,6 +47,7 @@ export function Song() {
     formData.append("file", file, file.name);
 
     try {
+      console.log(ENV_VAR.BACKEND_URL);
       const response = await axios.post(
         `${ENV_VAR.BACKEND_URL}/upload`,
         formData,
@@ -116,7 +117,7 @@ export function Song() {
       <VStack
         w={"100%"}
         h={"60px"}
-        backgroundColor={"orange"}
+        backgroundColor={"#ead8ba5f"}
         justifyContent={"flex-start"}
         alignItems={"center"}
         flexDirection={"row"}
@@ -158,11 +159,11 @@ export function Song() {
         <Button
           as="label"
           cursor="pointer"
-          backgroundColor={"#ffa500"}
+          backgroundColor={"#ead8ba5f"}
           color={"#ffffff"}
           size="lg"
           _hover={{
-            backgroundColor: "#ffa60080",
+            backgroundColor: "#ead8ba35",
           }}
         >
           Upload your song you want to listen

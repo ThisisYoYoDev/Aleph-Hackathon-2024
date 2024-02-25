@@ -11,7 +11,7 @@ export function Playlist() {
   const navigate = useNavigate();
 
   const getPlaylists = async () => {
-    const { songs } = (await axios.get(`$${ENV_VAR.BACKEND_URL}/song_list`))
+    const { songs } = (await axios.get(`${ENV_VAR.BACKEND_URL}/song_list`))
       .data;
     setSong(songs);
     console.log(Object.entries(songs)[5][0]);
@@ -34,18 +34,18 @@ export function Playlist() {
         h={"calc(100% - 16px)"}
         margin={"8px"}
         backgroundColor={"#333333"}
-        border={"1px solid orange"}
+        border={"1px solid #ead8ba5f"}
         justifyContent={"center"}
         alignItems={"center"}
       >
         <VStack alignItems={"flex-start"} w={"500px"}>
           <ChevronLeftIcon
             boxSize={"40px"}
-            color={"orange"}
+            color={"#ead8ba5f"}
             cursor={"pointer"}
             onClick={() => navigate("/dashboard")}
-            _hover={{ color: "#ab712ea1" }}
-          ></ChevronLeftIcon>
+            _hover={{ color: "#ffffff" }}
+          />
         </VStack>
         <VStack w={"500px"} h={"500px"}>
           <PlaylistManager songs={songs} playlistSearch={""} />
