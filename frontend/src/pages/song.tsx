@@ -9,6 +9,7 @@ import {
   useToast,
   Button,
   Text,
+  Spinner,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import {
@@ -24,6 +25,8 @@ import { ENV_VAR } from "../utils/env";
 export function Song() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [fileError, setFileError] = useState("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const navigate = useNavigate();
   const toast = useToast();
   const uploadFile = async (file: any) => {
@@ -61,6 +64,7 @@ export function Song() {
         duration: 5000,
         isClosable: true,
       });
+      return response.data;
     } catch (error) {
       console.error("Erreur lors de l'upload du fichier", error);
       toast({
@@ -73,12 +77,30 @@ export function Song() {
     }
   };
 
-  const handleFileChange = (event: any) => {
+  const handleFileChange = async (event: any) => {
     const file = event.target.files[0]; // Accéder au fichier sélectionné
 
     if (file) {
       // Appeler uploadFile directement avec le fichier sans lire comme ArrayBuffer
-      uploadFile(file);
+      setIsLoading(true);
+      const hash = await uploadFile(file);
+      setIsLoading(false);
+
+      const data = localStorage.getItem("uploaded");
+      if (data) {
+        localStorage.setItem(
+          "uploaded",
+          JSON.stringify([
+            ...JSON.parse(data),
+            { name: file.name, item_hash: hash[0].item_hash },
+          ]),
+        );
+      } else {
+        localStorage.setItem(
+          "uploaded",
+          JSON.stringify([{ name: file.name, item_hash: hash[0].item_hash }]),
+        );
+      }
     }
   };
 
@@ -144,6 +166,7 @@ export function Song() {
           }}
         >
           Upload your song you want to listen
+          {isLoading ? <Spinner marginLeft={5} /> : <></>}
           <Input
             type="file"
             accept=".mp3"
