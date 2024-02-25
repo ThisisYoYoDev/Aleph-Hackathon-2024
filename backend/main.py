@@ -1,3 +1,4 @@
+import aiohttp
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -106,6 +107,11 @@ I'm listening to the following music: '{CURRENT_MUSIC}'
 <|im_start|>assistant
 """
 
+async def fetch_ai(url, params):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, data=params) as response:
+            return response
+
 @app.get("/next_music")
 async def get_next_music(last_song: str = None):
     if last_song == None:
@@ -128,11 +134,11 @@ async def get_next_music(last_song: str = None):
         "top_k": 40,
         "n_predict": 126,
     }
-    response = requests.post(API_URL, json=params)
-
-    if response.status_code == 200:
+    response = await fetch_ai(API_URL, params)
+    if response.status == 200:
+        response_json = await response.json()
         try:
-            music_name = response.json()['content'].split('|name=')[1].split("'|")[0]
+            music_name = response_json.json()['content'].split('|name=')[1].split("'|")[0]
             for music in music_from:
                 if music.startswith(music_name):
                     music_name = music
