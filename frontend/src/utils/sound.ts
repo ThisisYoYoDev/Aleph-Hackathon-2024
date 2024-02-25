@@ -10,30 +10,38 @@ export const useAudioPlayer = ({ url }: UseAudioPlayerOptions) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [seek, setSeek] = useState<number>(0);
   const [duration, setDuration] = useState<number | undefined>(0);
+  const [howls, setHowls] = useState<Record<string, Howl>>({});
 
   useEffect(() => {
-    const howlPlayer = new Howl({
-      src: [url],
-      format: ["mp3"],
-      autoplay: false,
-      loop: false,
-      html5: false,
-      preload: true,
-      onplay: () => {
-        setIsPlaying(true);
-        setDuration(howlPlayer.duration());
-      },
-      onpause: () => setIsPlaying(false),
-      onstop: () => setIsPlaying(false),
-      onend: () => setIsPlaying(false),
-    });
+    let howlPlayer: Howl;
 
+    if (howls[url] === undefined) {
+      if (player) player.stop();
+      howlPlayer = new Howl({
+        src: [url],
+        format: ["mp3"],
+        autoplay: true,
+        loop: false,
+        html5: false,
+        preload: true,
+        onplay: () => {
+          setIsPlaying(true);
+          setDuration(howlPlayer.duration());
+        },
+        onpause: () => setIsPlaying(false),
+        onstop: () => setIsPlaying(false),
+        onend: () => setIsPlaying(false),
+      });
+      setHowls({ ...howls, [url]: howlPlayer });
+      console.log("load>", url, Object.keys(howls));
+    } else {
+      if (player) player.stop();
+      howlPlayer = howls[url];
+    }
     setPlayer(howlPlayer);
     setSeek(0);
+    howlPlayer.play();
     setDuration(undefined);
-    return () => {
-      howlPlayer.unload();
-    };
   }, [url]);
 
   const play = useCallback(() => {

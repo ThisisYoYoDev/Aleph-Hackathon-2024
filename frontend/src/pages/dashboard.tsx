@@ -16,7 +16,6 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
@@ -53,7 +52,6 @@ export function Dashboard() {
     "myPlaylists",
     [],
   );
-  const toast = useToast();
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -73,20 +71,28 @@ export function Dashboard() {
   };
 
   const getNextSong = async () => {
-    const { next_musique } = (
-      await axios.get(
-        `${ENV_VAR.BACKEND_URL}/next_music?last_song=${currentPlaying}`,
-      )
-    ).data;
-    console.log("Next song", next_musique);
-    setNextSong({ cid: songs[next_musique]["cid"], name: next_musique });
+    try {
+      const { next_musique } = (
+        await axios.get(`${ENV_VAR.BACKEND_URL}/next_music`, {
+          params: { last_song: currentPlaying },
+        })
+      ).data;
+      console.log("Next song", next_musique);
+      setNextSong({ cid: songs[next_musique]["cid"], name: next_musique });
+    } catch (error) {
+      console.log("Fail to load next musique");
+    }
   };
 
-  const handleVStackClick = (cid: string, key: string) => {
+  const handleVStackClick = (
+    cid: string,
+    key: string,
+    needNextSong: boolean = true,
+  ) => {
     console.log("CID clicked:", cid);
     setCID(cid);
     setCurrentPlaying(key);
-    getNextSong();
+    if (needNextSong) getNextSong();
   };
 
   const handleNextSong = () => {
@@ -94,12 +100,11 @@ export function Dashboard() {
       handleVStackClick(nextSong.cid, nextSong.name);
       setNextSong(undefined);
     } else {
-      toast({
-        title: "Next musique is not choose yest",
-        status: "info",
-        duration: 2000,
-        isClosable: true,
-      });
+      // If the ia isn't fast at one point
+      const keys = Object.keys(songs);
+      const targetKey: any =
+        keys[Math.floor((Math.random() * 1000) % keys.length)];
+      handleVStackClick(songs[targetKey]["cid"], targetKey, false);
     }
   };
 
