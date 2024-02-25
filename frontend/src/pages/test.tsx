@@ -9,9 +9,9 @@ import {
   Select,
   ListItem,
   UnorderedList,
+  useToast,
 } from "@chakra-ui/react";
-import { Song } from "./dashboard";
-
+import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 export interface Music {
   title: string;
   artist?: string;
@@ -25,6 +25,7 @@ export interface Playlist {
 
 const PlaylistManager = (songs: any, playlistSearch: string) => {
   // Initialiser la playlist stockée dans le localStorage
+  const toast = useToast();
   const [playlists, setPlaylists] = useLocalStorage<Playlist[]>(
     "myPlaylists",
     [],
@@ -43,6 +44,13 @@ const PlaylistManager = (songs: any, playlistSearch: string) => {
       musics: [],
     };
     setPlaylists([...playlists, newPlaylist]);
+    toast({
+      title: "Playlist successfully created.",
+      description: "We've created you a playlist.",
+      status: "success",
+      duration: 9000,
+      isClosable: true,
+    });
   };
 
   // Ajouter une musique à une playlist existante
@@ -53,6 +61,7 @@ const PlaylistManager = (songs: any, playlistSearch: string) => {
           // Assurez-vous que 'musics' contient uniquement des objets de type 'Music'
           return { ...playlist, musics: [...playlist.musics, newMusic] };
         }
+
         return playlist;
       });
     });
@@ -60,69 +69,100 @@ const PlaylistManager = (songs: any, playlistSearch: string) => {
 
   return (
     <VStack w={"80%"}>
-      <Input
-        type="text"
-        value={newPlaylistName}
-        onChange={(e) => setNewPlaylistName(e.target.value)}
-        placeholder="Nom de la nouvelle playlist"
-        color={"#ffffff"}
-      />
-      <Button onClick={() => addPlaylist(newPlaylistName)}>
-        Ajouter Playlist
-      </Button>
+      <Tabs isFitted variant="enclosed">
+        <TabList mb="1em">
+          <Tab color={"#ffffff"}>Create a playlist</Tab>
+          <Tab color={"#ffffff"}>Add song to playlist</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel gap={"20px"}>
+            <VStack justifyContent={"center"}>
+              <Input
+                type="text"
+                value={newPlaylistName}
+                onChange={(e) => setNewPlaylistName(e.target.value)}
+                placeholder="Nom de la nouvelle playlist"
+                color={"#ffffff"}
+                h={"50px"}
+                marginBottom={"20px"}
+              />
+              <Button
+                onClick={() => addPlaylist(newPlaylistName)}
+                colorScheme="orange"
+                w={"200px"}
+                h={"50px"}
+              >
+                Ajouter Playlist
+              </Button>
+            </VStack>
+          </TabPanel>
+          <TabPanel gap={"20px"}>
+            <VStack justifyContent={"center"}>
+              <Select
+                onChange={(e) => setSelectedPlaylistId(e.target.value)}
+                value={selectedPlaylistId}
+                color={"#ffffff"}
+                marginBottom={"20px"}
+              >
+                <option value="">Sélectionnez une Playlist</option>
+                {playlists
+                  .filter((playlist) => playlist.name.length > 1)
+                  .map((playlist) => (
+                    <option key={playlist.id} value={playlist.id}>
+                      {playlist.name}
+                    </option>
+                  ))}
+              </Select>
+              <Select
+                onChange={(e) => setNewMusic(e.target.value)}
+                color={"#ffffff"}
+                marginBottom={"20px"}
+              >
+                <option value="">Sélectionnez une musique</option>
+                {Object.entries(songs.songs) // Accéder à la sous-structure 'songs'
+                  .filter(
+                    ([key, value]) =>
+                      key.endsWith(".mp3") && typeof value === "object",
+                  ) // Filtrer pour les fichiers .mp3 qui sont des objets
+                  .map(([key, value]) => {
+                    // Ici, 'key' est le nom du fichier, et 'value' est l'objet contenant 'cid' et 'item_hash'
+                    // Vous pouvez ajuster le texte de l'option si nécessaire pour le rendre plus lisible
+                    const readableTitle = key
+                      .replace(/_/g, " ")
+                      .replace(".mp3", ""); // Exemple de transformation simple du nom de fichier
+                    return (
+                      <option key={key} value={key} color={"#ffffff"}>
+                        {readableTitle}
+                      </option>
+                    );
+                  })}
+              </Select>
 
-      <Select
-        onChange={(e) => setSelectedPlaylistId(e.target.value)}
-        value={selectedPlaylistId}
-        color={"#ffffff"}
-      >
-        <option value="">Sélectionnez une Playlist</option>
-        {playlists.map((playlist) => (
-          <option key={playlist.id} value={playlist.id}>
-            {playlist.name}
-          </option>
-        ))}
-      </Select>
-      <Select onChange={(e) => setNewMusic(e.target.value)} color={"#ffffff"}>
-        <option value="">Sélectionnez une musique</option>
-        {Object.entries(songs.songs) // Accéder à la sous-structure 'songs'
-          .filter(
-            ([key, value]) => key.endsWith(".mp3") && typeof value === "object",
-          ) // Filtrer pour les fichiers .mp3 qui sont des objets
-          .map(([key, value]) => {
-            // Ici, 'key' est le nom du fichier, et 'value' est l'objet contenant 'cid' et 'item_hash'
-            // Vous pouvez ajuster le texte de l'option si nécessaire pour le rendre plus lisible
-            const readableTitle = key.replace(/_/g, " ").replace(".mp3", ""); // Exemple de transformation simple du nom de fichier
-            return (
-              <option key={key} value={key} color={"#ffffff"}>
-                {readableTitle}
-              </option>
-            );
-          })}
-      </Select>
-
-      <Button
-        onClick={() => {
-          const musicToAdd = { title: newMusic }; // Ajustez selon vos besoins
-          if (selectedPlaylistId) {
-            addMusicToPlaylist(selectedPlaylistId, musicToAdd);
-          }
-        }}
-        disabled={!selectedPlaylistId || !newMusic}
-      >
-        Ajouter Musique
-      </Button>
-
-      {playlists.map((playlist) => (
-        <VStack key={playlist.id}>
-          <Text color={"#ffffff"}>{playlist.name}</Text>
-          {playlist.musics.map((music, index) => (
-            <UnorderedList>
-              <ListItem color={"#ffffff"}>{music.title}</ListItem>
-            </UnorderedList>
-          ))}
-        </VStack>
-      ))}
+              <Button
+                colorScheme="orange"
+                onClick={() => {
+                  const musicToAdd = { title: newMusic }; // Ajustez selon vos besoins
+                  if (selectedPlaylistId) {
+                    addMusicToPlaylist(selectedPlaylistId, musicToAdd);
+                    toast({
+                      title: "Music successfully added.",
+                      description: "We've added the music to your playlist",
+                      status: "success",
+                      duration: 9000,
+                      isClosable: true,
+                    });
+                  }
+                }}
+                w={"200px"}
+                h={"50px"}
+                disabled={!selectedPlaylistId || !newMusic}
+              >
+                Ajouter Musique
+              </Button>
+            </VStack>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </VStack>
   );
 };

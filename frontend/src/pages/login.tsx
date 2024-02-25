@@ -33,6 +33,7 @@ export function Login() {
       method: "eth_requestAccounts",
     });
     updateWallet(accounts);
+    console.log(accounts);
 
     if (accounts !== undefined || accounts !== null) navigate("/dashboard");
   };
