@@ -131,16 +131,19 @@ async def get_next_music(last_song: str = None):
     response = requests.post(API_URL, json=params)
 
     if response.status_code == 200:
-        music_name = response.json()['content'].split('|name=')[1].split("'|")[0]
-        for music in music_from:
-            if music.startswith(music_name):
-                music_name = music
-                break
-        if music_name not in music_from:
-            music_name = music_from[0]
-        return {'next_musique': music_name}
+        try:
+            music_name = response.json()['content'].split('|name=')[1].split("'|")[0]
+            for music in music_from:
+                if music.startswith(music_name):
+                    music_name = music
+                    break
+            if music_name not in music_from:
+                music_name = music_from[0]
+            return {'next_musique': music_name}
+        except:
+            return {'next_musique': music_from[0]}
     else:
-        return None
+        return {'next_musique': music_from[0]}
 
 async def upload_aggregate(content: dict):
     account = get_fallback_account(path=KEY_PATH)
