@@ -9,11 +9,11 @@ import { Playlist } from "./pages/playlist";
 
 const router = createBrowserRouter([
   {
-    path: "/login",
+    path: "/",
     element: <Login />,
   },
   {
-    path: "/",
+    path: "/dashboard",
     element: <Dashboard />,
   },
   {

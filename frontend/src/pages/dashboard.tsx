@@ -16,6 +16,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  useMediaQuery,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
@@ -46,6 +47,8 @@ export function Dashboard() {
     useAudioPlayer({
       url: `https://ipfs.aleph.im/ipfs/${CID}`,
     });
+
+  const [isLargerThan1500] = useMediaQuery("(min-width: 1500px)");
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [playlists, setPlaylists] = useLocalStorage<Playlist[]>(
@@ -112,6 +115,10 @@ export function Dashboard() {
     getPlaylists();
   }, []);
 
+  useEffect(() => {
+    console.log(isLargerThan1500); // Voir la valeur actuelle dans la console
+  }, [isLargerThan1500]);
+
   return (
     <VStack
       h={"100vh"}
@@ -126,55 +133,61 @@ export function Dashboard() {
         borderRadius={"8px"}
       >
         <VStack flexDirection={"row"} w={"100%"} h={"100%"}>
-          <VStack
-            flex={1}
-            h={"100%"}
-            borderRadius={"8px"}
-            backgroundColor={"#333333"}
-            border={"1px solid #fd923460"}
-          >
+          {isLargerThan1500 && (
             <VStack
-              w={"100%"}
-              marginTop={"10px"}
-              justifyContent={"space-evenly"}
+              flex={1}
+              h={"100%"}
+              borderRadius={"8px"}
+              backgroundColor={"#333333"}
+              border={"1px solid #fd923460"}
             >
-              <Text
-                color={"#ffffff"}
-                fontSize={"20px"}
-                onClick={() => navigate("/playlist")}
+              <VStack
+                w={"100%"}
+                marginTop={"10px"}
+                justifyContent={"space-evenly"}
               >
-                Your playlist
-              </Text>
+                <Text
+                  color={"#ffffff"}
+                  fontSize={"20px"}
+                  onClick={() => navigate("/playlist")}
+                  marginBottom={"40px"}
+                  cursor={"pointer"}
+                >
+                  Your playlist
+                </Text>
 
-              <Accordion allowToggle>
-                {playlists.map((playlist, index) => {
-                  return (
-                    <AccordionItem key={index}>
-                      <h2>
-                        <AccordionButton>
-                          <Box flex="1" textAlign="left">
-                            <Text color={"#ffffff"} as={"b"}>
-                              {playlist.name}
-                            </Text>
-                          </Box>
-                          <AccordionIcon />
-                        </AccordionButton>
-                      </h2>
-                      <AccordionPanel pb={4}>
-                        <VStack>
-                          {playlist.musics.map((music, musicIndex) => (
-                            <Text key={musicIndex} color={"#ffffff"}>
-                              {music.title}
-                            </Text>
-                          ))}
-                        </VStack>
-                      </AccordionPanel>
-                    </AccordionItem>
-                  );
-                })}
-              </Accordion>
+                <Accordion allowToggle w={"100%"}>
+                  {playlists
+                    .filter((playlist) => playlist.name.length > 1)
+                    .map((playlist, index) => {
+                      return (
+                        <AccordionItem key={index}>
+                          <AccordionButton
+                            _expanded={{ bg: "orange", color: "white" }}
+                          >
+                            <Box flex="1" textAlign="left">
+                              <Text color={"#ffffff"} as={"b"}>
+                                {playlist.name}
+                              </Text>
+                            </Box>
+                            <AccordionIcon />
+                          </AccordionButton>
+                          <AccordionPanel pb={4}>
+                            <VStack>
+                              {playlist.musics.map((music, musicIndex) => (
+                                <Text key={musicIndex} color={"#ffffff"}>
+                                  {music.title}
+                                </Text>
+                              ))}
+                            </VStack>
+                          </AccordionPanel>
+                        </AccordionItem>
+                      );
+                    })}
+                </Accordion>
+              </VStack>
             </VStack>
-          </VStack>
+          )}
           <VStack
             flex={3}
             h={"100%"}
@@ -187,7 +200,6 @@ export function Dashboard() {
               w={"100%"}
               height={"60px"}
               marginTop={"10px"}
-              gap={"200px"}
             >
               <VStack
                 w={"50px"}
@@ -208,7 +220,7 @@ export function Dashboard() {
                 </Text>
               </VStack>
               <Input
-                w={"500px"}
+                w={"40%"}
                 h={"50px"}
                 focusBorderColor="transparent"
                 backgroundColor={"#4E4E4E"}
@@ -226,19 +238,25 @@ export function Dashboard() {
 
             {/* Object VStack Container */}
             <Box
-              w={"100%"}
-              h={"100%"}
+              w="100%"
+              h="100%"
               flex={1}
-              marginTop={"120px"}
-              overflow={"hidden"}
+              marginTop={{ base: "60px", md: "120px" }}
+              overflow="scroll"
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
             >
               <VStack
-                w={"100%"}
-                paddingY={"4"}
-                maxH={"610px"}
-                h={"auto"}
-                flexWrap={"wrap"}
-                gap={"20px"}
+                w="100%"
+                maxW={{ sm: "90%", md: "80%", lg: "1200px" }}
+                paddingY="4"
+                maxH="610px"
+                h="auto"
+                flexWrap="wrap"
+                alignItems="center"
+                justifyContent="center"
+                flexDirection={{ base: "column", sm: "row" }}
               >
                 {Object.entries(songs)
                   .filter(
@@ -252,8 +270,8 @@ export function Dashboard() {
                     return (
                       <VStack
                         key={key}
-                        w="200px"
-                        h="200px"
+                        w={{ base: "150px", sm: "200px" }}
+                        h={{ base: "150px", sm: "200px" }}
                         backgroundColor="#4E4E4E"
                         borderRadius="8px"
                         m="2"
@@ -267,10 +285,10 @@ export function Dashboard() {
                           handleVStackClick(songDetails.cid, key);
                           setIsMusicSelected(true);
                         }}
-                        justifyContent={"center"}
-                        alignItems={"center"}
+                        justifyContent="center"
+                        alignItems="center"
                       >
-                        <Text color="#ffffff" margin={"8px"}>
+                        <Text color="#ffffff" margin="8px">
                           {key}
                         </Text>
                       </VStack>

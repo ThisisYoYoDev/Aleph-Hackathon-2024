@@ -1,11 +1,14 @@
 import { VStack } from "@chakra-ui/react";
+import { ChevronLeftIcon } from "@chakra-ui/icons";
 import PlaylistManager from "./test";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ENV_VAR } from "../utils/env";
 
 export function Playlist() {
   const [songs, setSong] = useState([]);
+  const navigate = useNavigate();
 
   const getPlaylists = async () => {
     const { songs } = (await axios.get(`$${ENV_VAR.BACKEND_URL}/song_list`))
@@ -32,8 +35,21 @@ export function Playlist() {
         margin={"8px"}
         backgroundColor={"#333333"}
         border={"1px solid orange"}
+        justifyContent={"center"}
+        alignItems={"center"}
       >
-        <PlaylistManager songs={songs} playlistSearch={""} />
+        <VStack alignItems={"flex-start"} w={"500px"}>
+          <ChevronLeftIcon
+            boxSize={"40px"}
+            color={"orange"}
+            cursor={"pointer"}
+            onClick={() => navigate("/dashboard")}
+            _hover={{ color: "#ab712ea1" }}
+          ></ChevronLeftIcon>
+        </VStack>
+        <VStack w={"500px"} h={"500px"}>
+          <PlaylistManager songs={songs} playlistSearch={""} />
+        </VStack>
       </VStack>
     </VStack>
   );
