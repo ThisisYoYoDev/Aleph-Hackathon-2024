@@ -90,18 +90,11 @@ export const PlaylistComponent: React.FC<VotreComposantProps> = ({
                           _hover={{
                             color: "#ffffff",
                           }}
+                          onClick={() => setClickedMusic(music.title)}
                         >
                           {music.title}
                         </Text>
                       </Tooltip>
-                      // <Text
-                      //   key={musicIndex}
-                      //   color={"#ffffff"}
-                      //   cursor={"pointer"}
-                      //   onClick={() => setClickedMusic(music.title)}
-                      // >
-                      //   {music.title}
-                      // </Text>
                     ),
                   )}
                 </VStack>
