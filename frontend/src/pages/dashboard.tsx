@@ -23,6 +23,7 @@ import { useAudioPlayer } from "../utils/sound";
 import { useNavigate } from "react-router-dom";
 import useLocalStorage from "../utils/localStorage";
 import { Playlist } from "./test";
+import { ENV_VAR } from "../utils/env";
 
 export interface Song {
   cid: string;
@@ -60,7 +61,7 @@ export function Dashboard() {
   };
 
   const getPlaylists = async () => {
-    const { songs } = (await axios.get(`http://localhost:8000/song_list`)).data;
+    const { songs } = (await axios.get(`${ENV_VAR}/song_list`)).data;
     setSong(songs);
     console.log(Object.entries(songs)[5][0]);
   };

@@ -19,6 +19,7 @@ import {
 } from "@chakra-ui/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ENV_VAR } from "../utils/env";
 
 export function Song() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -43,15 +44,11 @@ export function Song() {
     formData.append("file", file, file.name);
 
     try {
-      const response = await axios.post(
-        "http://localhost:8000/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+      const response = await axios.post(`${ENV_VAR}/upload`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-      );
+      });
       console.log(response);
       toast({
         title: "Upload successful",
