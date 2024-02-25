@@ -271,6 +271,8 @@ export function Dashboard() {
                 justifyContent="center"
                 flexDirection={{ base: "column", sm: "row" }}
                 overflow="scroll"
+                overflowX={"hidden"}
+                overflowY={"hidden"}
               >
                 {Object.entries(songs)
                   .filter(
