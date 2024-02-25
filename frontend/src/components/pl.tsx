@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { Dispatch, SetStateAction, useState } from "react";
-import { VStack, Box, Text } from "@chakra-ui/react";
+import { VStack, Box, Text, Image, Tooltip } from "@chakra-ui/react";
 import { Playlist } from "../pages/test";
+import { useNavigate } from "react-router-dom";
 
 interface VotreComposantProps {
   playlists: Playlist[];
@@ -12,6 +13,7 @@ export const PlaylistComponent: React.FC<VotreComposantProps> = ({
   playlists,
   setClickedMusic,
 }) => {
+  const navigate = useNavigate();
   const [selectedPlaylistIndex, setSelectedPlaylistIndex] = useState<
     number | null
   >(null);
@@ -43,33 +45,34 @@ export const PlaylistComponent: React.FC<VotreComposantProps> = ({
               gap={"20px"}
               w={"80%"}
               overflow={"hidden"}
-              backgroundColor={"#3d3d3d"}
+              backgroundColor={"transparent"}
               padding={"12px"}
               borderRadius={"8px"}
               cursor={"pointer"}
+              border={"1px solid transparent"}
               _hover={{
-                backgroundColor: "#3d3d3d69",
+                border: "1px solid #ead8ba5f",
+                backgroundColor: "#ead8ba20",
               }}
+              onClick={() => handlePlaylistClick(index)}
             >
-              <Box
-                flex="1"
-                textAlign="left"
-                onClick={() => handlePlaylistClick(index)}
-                cursor={"pointer"}
-              >
-                <Text
-                  color={"#ffffff86"}
-                  _hover={{
-                    color: "#ffffffbd",
-                  }}
-                >
-                  {playlist.name}
-                </Text>
+              <Box flex="1" textAlign="left" cursor={"pointer"}>
+                <VStack flexDirection={"row"} gap={"20px"}>
+                  <Image
+                    src="/plicon.png"
+                    boxSize={"40px"}
+                    borderRadius={"20px"}
+                  />
+                  <Text color={"#ffffff"}>{playlist.name}</Text>
+                </VStack>
               </Box>
               {selectedPlaylistIndex === index && (
                 <VStack alignItems={"flex-start"} gap={"10px"}>
                   {playlist.musics.length < 1 && (
-                    <Text color={"#ffffff86"}>
+                    <Text
+                      color={"#ffffff86"}
+                      onClick={() => navigate("/playlist")}
+                    >
                       Add music in this playlist...
                     </Text>
                   )}
@@ -81,14 +84,24 @@ export const PlaylistComponent: React.FC<VotreComposantProps> = ({
                       },
                       musicIndex: React.Key | null | undefined,
                     ) => (
-                      <Text
-                        key={musicIndex}
-                        color={"#ffffff"}
-                        cursor={"pointer"}
-                        onClick={() => setClickedMusic(music.title)}
-                      >
-                        {music.title}
-                      </Text>
+                      <Tooltip label="Play me!" aria-label="A tooltip">
+                        <Text
+                          color={"#a7a7a7"}
+                          _hover={{
+                            color: "#ffffff",
+                          }}
+                        >
+                          {music.title}
+                        </Text>
+                      </Tooltip>
+                      // <Text
+                      //   key={musicIndex}
+                      //   color={"#ffffff"}
+                      //   cursor={"pointer"}
+                      //   onClick={() => setClickedMusic(music.title)}
+                      // >
+                      //   {music.title}
+                      // </Text>
                     ),
                   )}
                 </VStack>

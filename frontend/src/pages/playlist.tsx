@@ -27,9 +27,10 @@ export function Playlist() {
       h={"100vh"}
       justifyContent={"center"}
       alignItems={"center"}
-      backgroundColor={"#1b1b1b"}
+      backgroundColor={"#000000"}
     >
       <VStack
+        background="linear-gradient(176deg, #3d2346b5 0%, #000000 100%)"
         w={"calc(100% - 16px)"}
         h={"calc(100% - 16px)"}
         margin={"8px"}

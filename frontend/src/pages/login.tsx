@@ -44,13 +44,14 @@ export function Login() {
       height={"100vh"}
       w={"100%"}
       alignItems={"center"}
-      backgroundColor={"#262626"}
+      backgroundColor={"#000000"}
+      background="linear-gradient(176deg, #3d2346b5 0%, #000000 100%)"
     >
       <HStack>
         <VStack
           w={"600px"}
           height={"500px"}
-          backgroundColor={"#1E1E1E"}
+          backgroundColor={"#1e1e1e56"}
           borderRadius={"8px"}
         >
           <Text
@@ -60,25 +61,13 @@ export function Login() {
             marginTop={"12px"}
             marginBottom={"60px"}
           >
-            Login to VibeDefy
+            Login to Vibeefy
           </Text>
-          <VStack w={"400px"} alignItems={"flex-start"} marginBottom={"40px"}>
-            <Text color={"#ffffff"} fontSize={"xl"} as={"b"}>
-              Hash
-            </Text>
-            <Input
-              height={"60px"}
-              color={"#ffffff"}
-              focusBorderColor="#000000"
-              placeholder="Enter your information..."
-              _hover={{
-                border: "2px solid #ffffff",
-              }}
-              _focus={{
-                border: "2px solid #7e1bcc",
-              }}
-            />
-          </VStack>
+          <VStack
+            w={"400px"}
+            alignItems={"flex-start"}
+            marginBottom={"40px"}
+          ></VStack>
           <VStack
             w={"200px"}
             h={"60px"}
@@ -97,8 +86,9 @@ export function Login() {
             w={"300px"}
             h={"60px"}
             fontSize={"xl"}
-            backgroundColor={"orange"}
+            backgroundColor={"#67317ab5"}
             color={"#ffffff"}
+            onClick={() => navigate("/dashboard")}
           >
             Register
           </Button>

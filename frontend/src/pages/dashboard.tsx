@@ -19,6 +19,7 @@ import {
   AccordionPanel,
   useMediaQuery,
   Button,
+  Spinner,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
@@ -113,6 +114,10 @@ export function Dashboard() {
     if (needNextSong) getNextSong();
   };
 
+  useEffect(() => {
+    console.log(isPlaying);
+  }, []);
+
   const handleNextSong = () => {
     if (nextSong) {
       handleVStackClick(nextSong.cid, nextSong.name);
@@ -159,9 +164,7 @@ export function Dashboard() {
               flex={1}
               h={"100%"}
               borderRadius={"8px"}
-              // backgroundColor={"#333333"}
-              background="linear-gradient(176deg, #3d2346 0%, #000000 100%)"
-              // border={"1px solid #ead8ba5f"}
+              background="linear-gradient(176deg, #3d2346a2 0%, #000000 100%)"
             >
               <VStack
                 w={"100%"}
@@ -177,56 +180,63 @@ export function Dashboard() {
                 playlists={playlists}
                 setClickedMusic={setClickedMusic}
               ></PlaylistComponent>
-              <Button
+              <VStack
                 fontSize={"14px"}
-                w={"200px"}
-                backgroundColor={"#ead8ba5f"}
+                w={"230px"}
+                backgroundColor={"transparent"}
                 onClick={() => navigate("/playlist")}
                 cursor={"pointer"}
+                border={"1px solid #3d2346"}
+                color={"#ffffff"}
+                boxShadow="#3d2346 0px 5px 15px"
                 h={"60px"}
+                justifyContent={"center"}
+                alignItems={"center"}
+                marginBottom={"20px"}
+                borderRadius={"4px"}
+                _hover={{
+                  boxShadow: "#3d2346 0px 10px 30px", // Augmentation du flou et de l'étalement
+                  border: "1px solid #3d2346b7",
+                }}
               >
-                Add a playlist
-              </Button>
-              <Button
-                fontSize={"14px"}
+                <Text as={"b"}>Manage your playlist</Text>
+              </VStack>
+              <VStack
+                h={"60px"}
                 w={"300px"}
-                backgroundColor={"#ead8ba5f"}
-                onClick={() => navigate("/song")}
+                fontSize={"14px"}
                 cursor={"pointer"}
+                color={"#ffffff"}
                 marginBottom={"40px"}
-                h={"60px"}
+                backgroundColor={"transparent"}
+                onClick={() => navigate("/song")}
+                boxShadow="#3d2346 0px 5px 15px"
+                borderRadius={"4px"}
+                border={"1px solid #3d2346"}
+                _hover={{
+                  boxShadow: "#3d2346 0px 10px 30px", // Augmentation du flou et de l'étalement
+                  border: "1px solid #3d2346b7",
+                }}
+                justifyContent={"center"}
+                alignItems={"center"}
               >
-                Upload a song
-              </Button>
+                <Text as={"b"}>Upload a song</Text>
+              </VStack>
             </VStack>
           )}
           <VStack
             flex={3}
             h={"100%"}
             borderRadius={"8px"}
-            // backgroundColor={"#333333"}
-            background="linear-gradient(176deg, #3d2346 0%, #000000 100%)"
-            // border={"1px solid #ead8ba5f"}
+            background="linear-gradient(176deg, #3d2346b5 0%, #000000 100%)"
           >
             <VStack
               flexDirection={"row"}
               w={"100%"}
               height={"60px"}
               marginTop={"10px"}
+              justifyContent={"center"}
             >
-              <VStack
-                w={"50px"}
-                h={"50px"}
-                backgroundColor={"#ead8ba5f"}
-                borderRadius={"100px"}
-                justifyContent={"center"}
-                marginLeft={"30px"}
-                cursor={"pointer"}
-              >
-                <Text color={"#ffffff"} as={"b"} fontSize={"16px"}>
-                  N
-                </Text>
-              </VStack>
               <Input
                 w={"50%"}
                 maxW={"400px"}
@@ -235,11 +245,11 @@ export function Dashboard() {
                 backgroundColor={"transparent"}
                 placeholder="What do you want to listen to?"
                 _placeholder={{
-                  color: "#ead8ba5f",
+                  color: "#ffffff",
                 }}
                 color={"#ffffff"}
                 border={"1px solid transparent"}
-                borderBottom={"1px solid #ead8ba5f"}
+                borderBottom={"1px solid #ffffff"}
                 _hover={{
                   border: "1px solid #ffffff",
                 }}
@@ -281,22 +291,21 @@ export function Dashboard() {
                   )
                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   .filter(([key, value]) => key.includes(search))
-                  .map(([key, value]) => {
+                  .map(([key, value], index) => {
                     const songDetails = value as Song;
                     return (
                       <VStack
                         key={key}
                         w={{ base: "120px", sm: "150px", md: "200px" }}
                         h={{ base: "120px", sm: "150px", md: "200px" }}
-                        // backgroundColor="#4E4E4E"
                         overflow={"hidden"}
                         borderRadius="8px"
                         m={{ base: "1", sm: "2" }}
                         border="1px solid transparent"
-                        // boxShadow="rgba(0, 0, 0, 0.1) 0px 4px 12px"
                         cursor="pointer"
                         _hover={{
                           border: "1px solid #ead8ba5f",
+                          backgroundColor: "#ead8ba20",
                         }}
                         onClick={() => {
                           handleVStackClick(songDetails.cid, key);
@@ -313,7 +322,7 @@ export function Dashboard() {
                           h={"80%"}
                         >
                           <Image
-                            src="/musics.png"
+                            src={index % 2 === 0 ? "/musics.png" : "/color.png"}
                             objectFit="cover"
                             borderRadius={"12px"}
                             w={"90%"}
@@ -353,7 +362,7 @@ export function Dashboard() {
             >
               <VStack w={"90%"} flexDirection={"row"} gap={"10px"}>
                 <Image
-                  src="/musics.png"
+                  src="/color.png"
                   boxSize={"60px"}
                   borderRadius={"4px"}
                 ></Image>
@@ -378,12 +387,21 @@ export function Dashboard() {
                   cursor={"pointer"}
                   onClick={reStart}
                 />
-                <Image
-                  src={isPlaying ? "/pause.png" : "pb.png"}
-                  boxSize={"40px"}
-                  onClick={togglePlayPause}
-                  cursor={"pointer"}
-                />
+                {duration! > 0 && (
+                  <Image
+                    src={isPlaying ? "/pause.png" : "pb.png"}
+                    boxSize={"40px"}
+                    onClick={togglePlayPause}
+                    cursor={"pointer"}
+                  />
+                )}
+                {duration! === undefined && (
+                  <Spinner
+                    colorScheme="purple"
+                    color="#3d2346"
+                    boxSize={"40px"}
+                  />
+                )}
                 <Image
                   src="/nextl.png"
                   boxSize={nextSong ? "24px" : "20px"}
@@ -405,9 +423,13 @@ export function Dashboard() {
                 >{`${formatTime(Math.round(seek))}`}</Text>
                 <Stack spacing={5} w={"60%"} h={"20px"}>
                   <Progress
-                    colorScheme="telegram"
+                    colorScheme="purple"
                     h={"8px"}
-                    value={(Math.round(seek) * 100) / 186}
+                    value={
+                      duration
+                        ? (Math.round(seek) * 100) / duration
+                        : (Math.round(seek) * 100) / 180
+                    }
                     borderRadius={"8px"}
                   />
                 </Stack>
@@ -430,7 +452,7 @@ export function Dashboard() {
                   aria-label="slider-ex-1"
                   defaultValue={30}
                   w={"40%"}
-                  colorScheme="#ead8ba5f"
+                  colorScheme="purple"
                   onChange={setVolume}
                 >
                   <SliderTrack>

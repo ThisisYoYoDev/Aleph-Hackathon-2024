@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   VStack,
   Input,
@@ -21,6 +22,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ENV_VAR } from "../utils/env";
+import { ChevronLeftIcon } from "@chakra-ui/icons";
 
 export function Song() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -110,60 +112,43 @@ export function Song() {
   return (
     <VStack
       w={"100%"}
-      backgroundColor={"#333333"}
       h={"100vh"}
+      justifyContent={"center"}
       alignItems={"center"}
+      backgroundColor={"#000000"}
     >
       <VStack
-        w={"100%"}
-        h={"60px"}
-        backgroundColor={"#ead8ba5f"}
-        justifyContent={"flex-start"}
-        alignItems={"center"}
-        flexDirection={"row"}
-        gap={"40px"}
-      >
-        <Menu>
-          <MenuButton
-            as={IconButton}
-            aria-label="Options"
-            icon={<HamburgerIcon />}
-            variant="outline"
-            marginLeft={"20px"}
-            border={"1px solid #3d3d3d"}
-          />
-          <MenuList>
-            <MenuItem
-              icon={<CalendarIcon />}
-              command="⌘T"
-              onClick={redirectDashboard}
-            >
-              Dashboard
-            </MenuItem>
-            <MenuItem icon={<ExternalLinkIcon />} command="⌘N">
-              New Window
-            </MenuItem>
-            <MenuItem icon={<RepeatIcon />} command="⌘⇧N">
-              Open Closed Tab
-            </MenuItem>
-          </MenuList>
-        </Menu>
-        <Text fontSize={"20px"}>Vibedefy</Text>
-      </VStack>
-      <VStack
-        w={"500px"}
-        h={"500px"}
+        background="linear-gradient(176deg, #3d2346b5 0%, #000000 100%)"
+        w={"calc(100% - 16px)"}
+        h={"calc(100% - 16px)"}
+        margin={"8px"}
+        backgroundColor={"#333333"}
+        border={"1px solid #ead8ba5f"}
         justifyContent={"center"}
         alignItems={"center"}
       >
+        <VStack position={"fixed"} top={"80px"} left={"100px"}>
+          <ChevronLeftIcon
+            boxSize={"40px"}
+            color={"#ead8ba5f"}
+            cursor={"pointer"}
+            onClick={() => navigate("/dashboard")}
+            _hover={{ color: "#ffffff" }}
+          />
+        </VStack>
+
         <Button
-          as="label"
-          cursor="pointer"
-          backgroundColor={"#ead8ba5f"}
-          color={"#ffffff"}
           size="lg"
+          h={"60px"}
+          as="label"
+          w={"500px"}
+          cursor="pointer"
+          color={"#ffffff"}
+          border={"1px solid #3d2346b5"}
+          backgroundColor={"transparent"}
+          boxShadow="#3d2346 0px 5px 15px"
           _hover={{
-            backgroundColor: "#ead8ba35",
+            backgroundColor: "#3d2346b5",
           }}
         >
           Upload your song you want to listen
