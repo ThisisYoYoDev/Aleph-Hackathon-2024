@@ -11,11 +11,18 @@ import {
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 import { useAudioPlayer } from "../utils/sound";
-import PlaylistManager from "./test";
+import { useNavigate } from "react-router-dom";
+import useLocalStorage from "../utils/localStorage";
+import { Playlist } from "./test";
 
 export interface Song {
   cid: string;
@@ -23,6 +30,7 @@ export interface Song {
 }
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const [isMusicSelected, setIsMusicSelected] = useState<boolean>(false);
   const [songs, setSong] = useState([]);
   const [CID, setCID] = useState<string>("");
@@ -34,6 +42,12 @@ export function Dashboard() {
     useAudioPlayer({
       url: `https://ipfs.aleph.im/ipfs/${CID}`,
     });
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [playlists, setPlaylists] = useLocalStorage<Playlist[]>(
+    "myPlaylists",
+    [],
+  );
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -85,14 +99,44 @@ export function Dashboard() {
             <VStack
               w={"100%"}
               marginTop={"10px"}
-              flexDirection={"row"}
               justifyContent={"space-evenly"}
             >
-              <Text color={"#ffffff"} fontSize={"20px"}>
+              <Text
+                color={"#ffffff"}
+                fontSize={"20px"}
+                onClick={() => navigate("/playlist")}
+              >
                 Your playlist
               </Text>
+
+              <Accordion allowToggle>
+                {playlists.map((playlist, index) => {
+                  return (
+                    <AccordionItem key={index}>
+                      <h2>
+                        <AccordionButton>
+                          <Box flex="1" textAlign="left">
+                            <Text color={"#ffffff"} as={"b"}>
+                              {playlist.name}
+                            </Text>
+                          </Box>
+                          <AccordionIcon />
+                        </AccordionButton>
+                      </h2>
+                      <AccordionPanel pb={4}>
+                        <VStack>
+                          {playlist.musics.map((music, musicIndex) => (
+                            <Text key={musicIndex} color={"#ffffff"}>
+                              {music.title}
+                            </Text>
+                          ))}
+                        </VStack>
+                      </AccordionPanel>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
             </VStack>
-            <PlaylistManager songs={songs} playlistSearch={playlistSearch} />
           </VStack>
           <VStack
             flex={3}
@@ -117,7 +161,12 @@ export function Dashboard() {
                 marginLeft={"30px"}
                 cursor={"pointer"}
               >
-                <Text color={"#ffffff"} as={"b"} fontSize={"16px"}>
+                <Text
+                  color={"#ffffff"}
+                  as={"b"}
+                  fontSize={"16px"}
+                  onClick={() => navigate("/song")}
+                >
                   N
                 </Text>
               </VStack>
