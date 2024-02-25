@@ -45,7 +45,7 @@ export function Login() {
       w={"100%"}
       alignItems={"center"}
       backgroundColor={"#000000"}
-      background="linear-gradient(176deg, #3d2346b5 0%, #000000 100%)"
+      background="linear-gradient(176deg, #27162cb5 0%, #000000 100%)"
     >
       <HStack>
         <VStack
@@ -70,14 +70,16 @@ export function Login() {
           ></VStack>
           <VStack
             w={"200px"}
-            h={"60px"}
+            h={"80px"}
             border={"1px solid orange"}
             borderRadius={"8px"}
+            justifyContent={"center"}
+            alignItems={"center"}
             cursor={"pointer"}
             _hover={{
               backgroundColor: "#7a59233a",
             }}
-            marginBottom={"20px"}
+            marginBottom={"120px"}
             onClick={handleConnect}
           >
             <Image src="/metamask.png" boxSize={"50px"} />
