@@ -9,7 +9,7 @@ export const useAudioPlayer = ({ url }: UseAudioPlayerOptions) => {
   const [player, setPlayer] = useState<Howl | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [seek, setSeek] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(0);
+  const [duration, setDuration] = useState<number | undefined>(0);
 
   useEffect(() => {
     const howlPlayer = new Howl({
@@ -18,6 +18,7 @@ export const useAudioPlayer = ({ url }: UseAudioPlayerOptions) => {
       autoplay: false,
       loop: false,
       html5: false,
+      preload: true,
       onplay: () => {
         setIsPlaying(true);
         setDuration(howlPlayer.duration());
@@ -28,7 +29,8 @@ export const useAudioPlayer = ({ url }: UseAudioPlayerOptions) => {
     });
 
     setPlayer(howlPlayer);
-
+    setSeek(0);
+    setDuration(undefined);
     return () => {
       howlPlayer.unload();
     };
@@ -59,6 +61,16 @@ export const useAudioPlayer = ({ url }: UseAudioPlayerOptions) => {
     [player],
   );
 
+  const reStart = useCallback(() => {
+    if (player) {
+      player.stop();
+      player.play();
+      setSeek(0);
+    } else {
+      console.log("Player not initialized", seek);
+    }
+  }, [player]);
+
   useEffect(() => {
     let intervalId: NodeJS.Timer | undefined;
 
@@ -88,5 +100,6 @@ export const useAudioPlayer = ({ url }: UseAudioPlayerOptions) => {
     seek,
     duration,
     setVolume,
+    reStart: reStart,
   };
 };

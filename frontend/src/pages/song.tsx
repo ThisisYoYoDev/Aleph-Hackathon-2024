@@ -19,6 +19,7 @@ import {
 } from "@chakra-ui/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ENV_VAR } from "../utils/env";
 
 export function Song() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -44,7 +45,7 @@ export function Song() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/upload",
+        `${ENV_VAR.BACKEND_URL}/upload`,
         formData,
         {
           headers: {

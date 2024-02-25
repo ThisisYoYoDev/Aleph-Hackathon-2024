@@ -23,6 +23,7 @@ import { useAudioPlayer } from "../utils/sound";
 import { useNavigate } from "react-router-dom";
 import useLocalStorage from "../utils/localStorage";
 import { Playlist } from "./test";
+import { ENV_VAR } from "../utils/env";
 
 export interface Song {
   cid: string;
@@ -38,7 +39,7 @@ export function Dashboard() {
   const [search, setSearch] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [playlistSearch, setPlaylistSearch] = useState<string>("");
-  const { isPlaying, togglePlayPause, seek, duration, setVolume } =
+  const { isPlaying, togglePlayPause, seek, duration, setVolume, reStart } =
     useAudioPlayer({
       url: `https://ipfs.aleph.im/ipfs/${CID}`,
     });
@@ -60,7 +61,8 @@ export function Dashboard() {
   };
 
   const getPlaylists = async () => {
-    const { songs } = (await axios.get(`http://localhost:8000/song_list`)).data;
+    const { songs } = (await axios.get(`${ENV_VAR.BACKEND_URL}/song_list`))
+      .data;
     setSong(songs);
     console.log(Object.entries(songs)[5][0]);
   };
@@ -273,7 +275,12 @@ export function Dashboard() {
                 gap={"60px"}
                 marginTop={"8px"}
               >
-                <Image src="/nextr.png" boxSize={"20px"} cursor={"pointer"} />
+                <Image
+                  src="/nextr.png"
+                  boxSize={"20px"}
+                  cursor={"pointer"}
+                  onClick={reStart}
+                />
                 <Image
                   src={isPlaying ? "/pause.png" : "pb.png"}
                   boxSize={"40px"}
@@ -303,7 +310,7 @@ export function Dashboard() {
                   />
                 </Stack>
                 <Text color={"#ffffff"} marginBottom={"12px"}>
-                  {formatTime(Math.round(duration))}
+                  {duration ? formatTime(Math.round(duration)) : " ~ "}
                 </Text>
               </VStack>
             </VStack>
