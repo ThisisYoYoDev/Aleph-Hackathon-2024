@@ -288,12 +288,12 @@ export function Dashboard() {
                         key={key}
                         w={{ base: "120px", sm: "150px", md: "200px" }}
                         h={{ base: "120px", sm: "150px", md: "200px" }}
-                        backgroundColor="#4E4E4E"
+                        // backgroundColor="#4E4E4E"
                         overflow={"hidden"}
                         borderRadius="8px"
                         m={{ base: "1", sm: "2" }}
                         border="1px solid transparent"
-                        boxShadow="rgba(0, 0, 0, 0.1) 0px 4px 12px"
+                        // boxShadow="rgba(0, 0, 0, 0.1) 0px 4px 12px"
                         cursor="pointer"
                         _hover={{
                           border: "1px solid #ead8ba5f",
