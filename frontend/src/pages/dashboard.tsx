@@ -30,7 +30,7 @@ export function Dashboard() {
   const [search, setSearch] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [playlistSearch, setPlaylistSearch] = useState<string>("");
-  const { isPlaying, togglePlayPause, seek, duration, setVolume } =
+  const { isPlaying, togglePlayPause, seek, duration, setVolume, reStart } =
     useAudioPlayer({
       url: `https://ipfs.aleph.im/ipfs/${CID}`,
     });
@@ -224,7 +224,12 @@ export function Dashboard() {
                 gap={"60px"}
                 marginTop={"8px"}
               >
-                <Image src="/nextr.png" boxSize={"20px"} cursor={"pointer"} />
+                <Image
+                  src="/nextr.png"
+                  boxSize={"20px"}
+                  cursor={"pointer"}
+                  onClick={reStart}
+                />
                 <Image
                   src={isPlaying ? "/pause.png" : "pb.png"}
                   boxSize={"40px"}
@@ -254,7 +259,7 @@ export function Dashboard() {
                   />
                 </Stack>
                 <Text color={"#ffffff"} marginBottom={"12px"}>
-                  {formatTime(Math.round(duration))}
+                  {duration ? formatTime(Math.round(duration)) : " ~ "}
                 </Text>
               </VStack>
             </VStack>
