@@ -16,6 +16,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
@@ -33,6 +34,9 @@ export interface Song {
 export function Dashboard() {
   const navigate = useNavigate();
   const [isMusicSelected, setIsMusicSelected] = useState<boolean>(false);
+  const [nextSong, setNextSong] = useState<
+    { cid: string; name: string } | undefined
+  >(undefined);
   const [songs, setSong] = useState([]);
   const [CID, setCID] = useState<string>("");
   const [currentPlaying, setCurrentPlaying] = useState<string>("");
@@ -49,6 +53,7 @@ export function Dashboard() {
     "myPlaylists",
     [],
   );
+  const toast = useToast();
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -67,10 +72,35 @@ export function Dashboard() {
     console.log(Object.entries(songs)[5][0]);
   };
 
+  const getNextSong = async () => {
+    const { next_musique } = (
+      await axios.get(
+        `${ENV_VAR.BACKEND_URL}/next_music?last_song=${currentPlaying}`,
+      )
+    ).data;
+    console.log("Next song", next_musique);
+    setNextSong({ cid: songs[next_musique]["cid"], name: next_musique });
+  };
+
   const handleVStackClick = (cid: string, key: string) => {
     console.log("CID clicked:", cid);
     setCID(cid);
     setCurrentPlaying(key);
+    getNextSong();
+  };
+
+  const handleNextSong = () => {
+    if (nextSong) {
+      handleVStackClick(nextSong.cid, nextSong.name);
+      setNextSong(undefined);
+    } else {
+      toast({
+        title: "Next musique is not choose yest",
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
   };
 
   useEffect(() => {
@@ -287,7 +317,12 @@ export function Dashboard() {
                   onClick={togglePlayPause}
                   cursor={"pointer"}
                 />
-                <Image src="/nextl.png" boxSize={"20px"} cursor={"pointer"} />
+                <Image
+                  src="/nextl.png"
+                  boxSize={nextSong ? "24px" : "20px"}
+                  cursor={"pointer"}
+                  onClick={handleNextSong}
+                />
               </VStack>
               <VStack
                 flexDirection={"row"}
