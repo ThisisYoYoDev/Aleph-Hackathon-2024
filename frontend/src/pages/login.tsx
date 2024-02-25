@@ -63,7 +63,7 @@ export function Login() {
           </Text>
           <VStack w={"400px"} alignItems={"flex-start"} marginBottom={"40px"}>
             <Text color={"#ffffff"} fontSize={"xl"} as={"b"}>
-              Email
+              Hash
             </Text>
             <Input
               height={"60px"}
@@ -96,7 +96,7 @@ export function Login() {
             w={"300px"}
             h={"60px"}
             fontSize={"xl"}
-            backgroundColor={"#7e1bcc"}
+            backgroundColor={"orange"}
             color={"#ffffff"}
           >
             Register

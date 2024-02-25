@@ -12,12 +12,12 @@ import {
 } from "@chakra-ui/react";
 import { Song } from "./dashboard";
 
-interface Music {
+export interface Music {
   title: string;
   artist?: string;
 }
 
-interface Playlist {
+export interface Playlist {
   id: string;
   name: string;
   musics: Music[];
