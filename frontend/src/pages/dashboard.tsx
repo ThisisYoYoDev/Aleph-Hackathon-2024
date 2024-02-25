@@ -144,7 +144,7 @@ export function Dashboard() {
     <VStack
       h={"100vh"}
       w={"100vw"}
-      backgroundColor={"#1b1b1b"}
+      backgroundColor={"#000000"}
       justifyContent={"center"}
       overflow="hidden"
     >
@@ -159,19 +159,16 @@ export function Dashboard() {
               flex={1}
               h={"100%"}
               borderRadius={"8px"}
-              backgroundColor={"#333333"}
-              border={"1px solid #ead8ba5f"}
+              // backgroundColor={"#333333"}
+              background="linear-gradient(176deg, #3d2346 0%, #000000 100%)"
+              // border={"1px solid #ead8ba5f"}
             >
               <VStack
                 w={"100%"}
                 marginTop={"10px"}
                 justifyContent={"space-evenly"}
               >
-                <Text
-                  color={"#ffffff86"}
-                  fontSize={"20px"}
-                  marginBottom={"20px"}
-                >
+                <Text color={"#ffffff"} fontSize={"20px"} marginBottom={"20px"}>
                   Your playlist
                 </Text>
               </VStack>
@@ -207,8 +204,9 @@ export function Dashboard() {
             flex={3}
             h={"100%"}
             borderRadius={"8px"}
-            backgroundColor={"#333333"}
-            border={"1px solid #ead8ba5f"}
+            // backgroundColor={"#333333"}
+            background="linear-gradient(176deg, #3d2346 0%, #000000 100%)"
+            // border={"1px solid #ead8ba5f"}
           >
             <VStack
               flexDirection={"row"}
@@ -340,8 +338,8 @@ export function Dashboard() {
             h={"90px"}
             w={"100%"}
             borderRadius={"8px"}
-            backgroundColor={"#333333"}
-            border={"1px solid #ead8ba5f"}
+            backgroundColor={"#000000"}
+            // border={"1px solid #3d2346"}
             minH={"90px"}
             flexDirection={"row"}
           >
@@ -351,9 +349,16 @@ export function Dashboard() {
               justifyContent={"center"}
               alignItems={"center"}
             >
-              <Text color={"#ffffff"} margin={"8px"}>
-                {currentPlaying}
-              </Text>
+              <VStack w={"90%"} flexDirection={"row"} gap={"10px"}>
+                <Image
+                  src="/musics.png"
+                  boxSize={"60px"}
+                  borderRadius={"4px"}
+                ></Image>
+                <Text color={"#ffffff"} margin={"8px"}>
+                  {currentPlaying}
+                </Text>
+              </VStack>
             </VStack>
             <VStack flex={3} h={"100%"}>
               <VStack

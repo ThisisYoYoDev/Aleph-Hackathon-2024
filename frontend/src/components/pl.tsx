@@ -38,7 +38,19 @@ export const PlaylistComponent: React.FC<VotreComposantProps> = ({
             },
             index: number,
           ) => (
-            <VStack key={index} gap={"20px"} overflow={"hidden"}>
+            <VStack
+              key={index}
+              gap={"20px"}
+              w={"80%"}
+              overflow={"hidden"}
+              backgroundColor={"#3d3d3d"}
+              padding={"12px"}
+              borderRadius={"8px"}
+              cursor={"pointer"}
+              _hover={{
+                backgroundColor: "#3d3d3d69",
+              }}
+            >
               <Box
                 flex="1"
                 textAlign="left"
