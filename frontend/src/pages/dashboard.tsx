@@ -61,7 +61,8 @@ export function Dashboard() {
   };
 
   const getPlaylists = async () => {
-    const { songs } = (await axios.get(`${ENV_VAR}/song_list`)).data;
+    const { songs } = (await axios.get(`${ENV_VAR.BACKEND_URL}/song_list`))
+      .data;
     setSong(songs);
     console.log(Object.entries(songs)[5][0]);
   };

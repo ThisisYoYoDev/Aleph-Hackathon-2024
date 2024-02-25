@@ -44,11 +44,15 @@ export function Song() {
     formData.append("file", file, file.name);
 
     try {
-      const response = await axios.post(`${ENV_VAR}/upload`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      const response = await axios.post(
+        `${ENV_VAR.BACKEND_URL}/upload`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         },
-      });
+      );
       console.log(response);
       toast({
         title: "Upload successful",

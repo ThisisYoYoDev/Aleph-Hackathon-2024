@@ -2,12 +2,14 @@ import { VStack } from "@chakra-ui/react";
 import PlaylistManager from "./test";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { ENV_VAR } from "../utils/env";
 
 export function Playlist() {
   const [songs, setSong] = useState([]);
 
   const getPlaylists = async () => {
-    const { songs } = (await axios.get(`http://localhost:8000/song_list`)).data;
+    const { songs } = (await axios.get(`$${ENV_VAR.BACKEND_URL}/song_list`))
+      .data;
     setSong(songs);
     console.log(Object.entries(songs)[5][0]);
   };
