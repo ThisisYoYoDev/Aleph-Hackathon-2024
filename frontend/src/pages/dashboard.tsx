@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import axios from "axios";
 import {
@@ -12,13 +13,7 @@ import {
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   useMediaQuery,
-  Button,
   Spinner,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
@@ -43,12 +38,22 @@ export function Dashboard() {
   >(undefined);
   const [songs, setSong] = useState([]);
   const [CID, setCID] = useState<string>("");
+  const [isUpdated, setIsUpdated] = useState<boolean>(false);
+
   const [currentPlaying, setCurrentPlaying] = useState<string>("");
   const [search, setSearch] = useState<string>("");
-  const { isPlaying, togglePlayPause, seek, duration, setVolume, reStart } =
-    useAudioPlayer({
-      url: `https://ipfs.aleph.im/ipfs/${CID}`,
-    });
+  const {
+    isPlaying,
+    togglePlayPause,
+    seek,
+    duration,
+    setVolume,
+    reStart,
+    setTime,
+  } = useAudioPlayer({
+    url: `https://ipfs.aleph.im/ipfs/${CID}`,
+    isUpdated,
+  });
 
   const [clickedMusic, setClickedMusic] = useState<string>("");
 
@@ -57,7 +62,7 @@ export function Dashboard() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [playlists, setPlaylists] = useLocalStorage<Playlist[]>(
     "myPlaylists",
-    [],
+    []
   );
 
   const formatTime = (seconds: number) => {
@@ -106,11 +111,12 @@ export function Dashboard() {
   const handleVStackClick = (
     cid: string,
     key: string,
-    needNextSong: boolean = true,
+    needNextSong: boolean = true
   ) => {
     console.log("CID clicked:", cid);
     setCID(cid);
     setCurrentPlaying(key);
+    setIsUpdated(!isUpdated);
     if (needNextSong) getNextSong();
   };
 
@@ -136,14 +142,27 @@ export function Dashboard() {
   }, []);
 
   useEffect(() => {
-    const x = findCidBySongName(songs, clickedMusic);
-    console.log(x, clickedMusic);
-    if (x !== undefined && x !== null) {
-      setCID(x);
-      setIsMusicSelected(true);
-      setCurrentPlaying(clickedMusic);
+    if (clickedMusic) {
+      const x = findCidBySongName(songs, clickedMusic);
+      console.log(x, clickedMusic);
+      if (x !== undefined && x !== null) {
+        handleVStackClick(x, clickedMusic);
+        setClickedMusic("");
+      }
     }
   }, [clickedMusic]);
+
+  const handleProgressClick = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    if (duration) {
+      const progressBar = event.currentTarget;
+      const clickPositionX =
+        event.clientX - progressBar.getBoundingClientRect().left;
+      const newSeek = (clickPositionX / progressBar.clientWidth) * duration;
+      setTime(newSeek);
+    }
+  };
 
   return (
     <VStack
@@ -287,7 +306,7 @@ export function Dashboard() {
                 {Object.entries(songs)
                   .filter(
                     ([key, value]) =>
-                      key.endsWith(".mp3") && typeof value === "object",
+                      key.endsWith(".mp3") && typeof value === "object"
                   )
                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   .filter(([key, value]) => key.includes(search))
@@ -333,7 +352,7 @@ export function Dashboard() {
                           />
                         </VStack>
                         <VStack flex={1} h={"20%"} overflow={"hidden"}>
-                          <Text color="#ffffff" margin="8px" fontSize={"14px"}>
+                          <Text color={currentPlaying === key ? "purple" :"#ffffff"} margin="8px" fontSize={"14px"}>
                             {key}
                           </Text>
                         </VStack>
@@ -430,6 +449,7 @@ export function Dashboard() {
                         ? (Math.round(seek) * 100) / duration
                         : (Math.round(seek) * 100) / 180
                     }
+                    onClick={handleProgressClick}
                     borderRadius={"8px"}
                   />
                 </Stack>

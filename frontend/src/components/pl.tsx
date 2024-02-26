@@ -90,7 +90,10 @@ export const PlaylistComponent: React.FC<VotreComposantProps> = ({
                           _hover={{
                             color: "#ffffff",
                           }}
-                          onClick={() => setClickedMusic(music.title)}
+                          onClick={(e) => {
+                            setClickedMusic(music.title);
+                            e.stopPropagation();
+                          }}
                         >
                           {music.title}
                         </Text>

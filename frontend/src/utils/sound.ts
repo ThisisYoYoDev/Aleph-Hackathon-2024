@@ -1,11 +1,13 @@
+/* eslint-disable prettier/prettier */
 import { useState, useEffect, useCallback } from "react";
 import { Howl } from "howler";
 
 interface UseAudioPlayerOptions {
   url: string;
+  isUpdated: boolean;
 }
 
-export const useAudioPlayer = ({ url }: UseAudioPlayerOptions) => {
+export const useAudioPlayer = ({ url, isUpdated }: UseAudioPlayerOptions) => {
   const [player, setPlayer] = useState<Howl | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [seek, setSeek] = useState<number>(0);
@@ -42,7 +44,7 @@ export const useAudioPlayer = ({ url }: UseAudioPlayerOptions) => {
     setSeek(0);
     howlPlayer.play();
     setDuration(undefined);
-  }, [url]);
+  }, [url, isUpdated]);
 
   const play = useCallback(() => {
     player?.play();
@@ -66,7 +68,19 @@ export const useAudioPlayer = ({ url }: UseAudioPlayerOptions) => {
         console.log("Player not initialized");
       }
     },
-    [player],
+    [player]
+  );
+
+  const setTime = useCallback(
+    (time: number) => {
+      if (player) {
+        setSeek(time);
+        player.seek(time);
+      } else {
+        console.log("Player not initialized");
+      }
+    },
+    [player]
   );
 
   const reStart = useCallback(() => {
@@ -108,6 +122,7 @@ export const useAudioPlayer = ({ url }: UseAudioPlayerOptions) => {
     seek,
     duration,
     setVolume,
-    reStart: reStart,
+    reStart,
+    setTime,
   };
 };
